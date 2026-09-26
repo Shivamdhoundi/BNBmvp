@@ -29,6 +29,13 @@ export async function getOrganizationContext(): Promise<OrganizationContext | nu
   
   if (!activeOrgId) return null;
 
+  // Validate activeOrgId is a valid UUID to prevent Postgres 22P02 errors
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(activeOrgId)) {
+    // If the cookie is poisoned (e.g. string "undefined"), return null immediately
+    return null;
+  }
+
   // Combine member and organization fetch into a single query
   const { data, error } = await supabase
     .from("organization_members")

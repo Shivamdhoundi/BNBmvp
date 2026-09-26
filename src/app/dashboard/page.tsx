@@ -86,7 +86,8 @@ const showcaseProperties = [
 ];
 
 export default async function DashboardPage() {
-  const context = await requireOrganizationContext();
+  const context = await getOrganizationContext();
+  if (!context) return null; // Let the layout handle the redirect
   const dbProperties = await listProperties(context.organization.id);
   
   const totalCount = dbProperties.length || 14;

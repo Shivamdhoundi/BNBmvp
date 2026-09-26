@@ -4,6 +4,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function setActiveProfile(organizationId: string) {
+  if (!organizationId || typeof organizationId !== "string" || organizationId === "undefined") {
+    throw new Error("Invalid organization ID");
+  }
+  
   const cookieStore = await cookies();
   cookieStore.set("staypilot_active_org_id", organizationId, {
     path: "/",
