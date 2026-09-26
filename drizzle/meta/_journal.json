@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790336346281,
+      "tag": "0000_phase_1_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790422375837,
+      "tag": "0001_chemical_goliath",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790428910973,
+      "tag": "0002_add_property_settings_and_rls",
+      "breakpoints": true
+    }
+  ]
+}
