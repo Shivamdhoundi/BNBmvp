@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import {
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { getProperty } from "@/server/properties/service";
+import { listOwners } from "@/server/owners/service";
 import {
   updatePropertyDirectAction,
   deletePropertyAction,
@@ -27,6 +29,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
   const { propertyId } = await params;
   const context = await requireOrganizationContext();
   const property = await getProperty(context.organization.id, propertyId);
+  const owners = await listOwners(context.organization.id);
 
   if (!property) notFound();
 
@@ -293,6 +296,17 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
                 </div>
 
                 <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Management Commission (%)</label>
+                  <input
+                    name="managementCommissionPercent"
+                    type="number"
+                    step="0.5"
+                    defaultValue={Number((property as any).management_commission_percent || 20)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 outline-none focus:border-teal-600"
+                  />
+                </div>
+
+                <div>
                   <label className="font-semibold text-slate-700 block mb-1">Cleaning Fee (₹)</label>
                   <input
                     name="cleaningFee"
@@ -300,6 +314,22 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
                     defaultValue={Number(property.cleaning_fee)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 outline-none focus:border-teal-600"
                   />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Property Owner</label>
+                  <select
+                    name="ownerId"
+                    defaultValue={((property.owners as any) && !Array.isArray(property.owners) ? (property.owners as any).id : (property.owners as any)?.[0]?.id) || ""}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 outline-none focus:border-teal-600"
+                  >
+                    <option value="" disabled>Select an owner (Optional)</option>
+                    {owners.map((owner) => (
+                      <option key={owner.id} value={owner.id}>
+                        {owner.legal_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

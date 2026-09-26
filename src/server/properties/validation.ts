@@ -24,6 +24,8 @@ export const createPropertySchema = z.object({
   securityDeposit: z.coerce.number().min(0).default(0),
   description: z.string().trim().max(1_500).optional(),
   houseRules: z.string().trim().max(2_000).optional(),
+  ownerId: z.string().uuid().optional().nullable(),
+  managementCommissionPercent: z.coerce.number().min(0).max(100).default(20),
   bedrooms: z.coerce.number().min(0).max(99).default(1),
   bathrooms: z.coerce.number().positive().max(99).default(1),
   maxGuests: z.coerce.number().int().min(1).max(100).default(2),

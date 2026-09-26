@@ -137,6 +137,7 @@ export const properties = pgTable(
     securityDeposit: numeric("security_deposit", { precision: 10, scale: 2 }).default("0").notNull(),
     description: text("description"),
     houseRules: text("house_rules"),
+    managementCommissionPercent: numeric("management_commission_percent", { precision: 5, scale: 2 }).default("20.00").notNull(),
     createdBy: uuid("created_by").references(() => users.id),
     createdAt,
     updatedAt,

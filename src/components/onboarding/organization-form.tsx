@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
+import { createOrganization } from "@/app/actions/onboarding";
 
 function toSlug(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -20,18 +20,15 @@ export function OrganizationForm() {
   async function onSubmit(formData: FormData) {
     setIsLoading(true);
     setError(undefined);
-    const { error: rpcError } = await createClient().rpc("create_organization_with_owner", {
-      input_name: String(formData.get("name")),
-      input_slug: String(formData.get("slug")),
-    });
-
-    if (rpcError) {
-      setError(rpcError.message);
+    formData.set("defaultCurrency", "INR"); // default for now based on UI notice
+    const result = await createOrganization(formData);
+    
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
       return;
     }
-    router.replace("/dashboard");
-    router.refresh();
+    // Note: The server action handles the redirect to /dashboard.
   }
 
   return (

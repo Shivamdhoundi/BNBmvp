@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { createClient } from "@/lib/supabase/client";
+import { signUp } from "@/app/actions/auth";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -15,23 +15,17 @@ export function SignUpForm() {
   async function onSubmit(formData: FormData) {
     setIsLoading(true);
     setError(undefined);
-    const email = String(formData.get("email"));
-    const fullName = String(formData.get("fullName"));
-    const { data, error: signUpError } = await createClient().auth.signUp({
-      email,
-      password: String(formData.get("password")),
-      options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/auth/confirm` },
-    });
-    if (signUpError) {
-      setError(signUpError.message);
+    const result = await signUp(formData);
+    
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
       return;
     }
-    if (!data.session) setNotice("Check your inbox to confirm your email, then return here to sign in.");
-    else {
-      router.replace("/onboarding");
-      router.refresh();
-    }
+    
+    // In our server action, we redirect on success, or if confirmation is needed we could return a message.
+    // Assuming simple signup flow, we will set notice to check inbox.
+    setNotice("Check your inbox to confirm your email, then return here to sign in.");
     setIsLoading(false);
   }
 

@@ -22,6 +22,13 @@
       "when": 1790428910973,
       "tag": "0002_add_property_settings_and_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790445614075,
+      "tag": "0003_omniscient_nemesis",
+      "breakpoints": true
     }
   ]
 }

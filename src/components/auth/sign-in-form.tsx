@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { createClient } from "@/lib/supabase/client";
+import { signIn } from "@/app/actions/auth";
 
 export function SignInForm({ nextPath }: { nextPath?: string }) {
   const router = useRouter();
@@ -14,17 +14,11 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
   async function onSubmit(formData: FormData) {
     setIsLoading(true);
     setError(undefined);
-    const { error: signInError } = await createClient().auth.signInWithPassword({
-      email: String(formData.get("email")),
-      password: String(formData.get("password")),
-    });
-    if (signInError) {
-      setError(signInError.message);
+    const result = await signIn(formData, nextPath);
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
-      return;
     }
-    router.replace(nextPath && nextPath.startsWith("/") ? nextPath : "/dashboard");
-    router.refresh();
   }
 
   return (

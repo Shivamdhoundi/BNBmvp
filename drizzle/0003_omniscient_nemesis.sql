@@ -1,0 +1,1 @@
+ALTER TABLE "properties" ADD COLUMN "management_commission_percent" numeric(5, 2) DEFAULT '20.00' NOT NULL;

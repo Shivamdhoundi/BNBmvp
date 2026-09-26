@@ -45,6 +45,8 @@ export async function createPropertyAction(_: PropertyFormState, formData: FormD
     bedrooms: formData.get("bedrooms") || 1,
     bathrooms: formData.get("bathrooms") || 1,
     maxGuests: formData.get("maxGuests") || 2,
+    ownerId: formData.get("ownerId") || undefined,
+    managementCommissionPercent: formData.get("managementCommissionPercent") || 20,
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -88,6 +90,8 @@ export async function updatePropertyAction(_: PropertyFormState, formData: FormD
     bedrooms: formData.get("bedrooms") || undefined,
     bathrooms: formData.get("bathrooms") || undefined,
     maxGuests: formData.get("maxGuests") || undefined,
+    ownerId: formData.get("ownerId") || undefined,
+    managementCommissionPercent: formData.get("managementCommissionPercent") || undefined,
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -130,6 +134,8 @@ export async function updatePropertyDirectAction(formData: FormData) {
     bedrooms: formData.get("bedrooms") || undefined,
     bathrooms: formData.get("bathrooms") || undefined,
     maxGuests: formData.get("maxGuests") || undefined,
+    ownerId: formData.get("ownerId") || undefined,
+    managementCommissionPercent: formData.get("managementCommissionPercent") || undefined,
   });
 
   if (!parsed.success) throw new Error("Validation failed for property update.");

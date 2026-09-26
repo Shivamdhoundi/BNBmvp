@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useActionState, useState } from "react";
@@ -16,7 +17,7 @@ function FieldError({ errors }: { errors?: string[] }) {
 
 const inputClass = "mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-500/10";
 
-export function PropertyForm() {
+export function PropertyForm({ owners = [] }: { owners?: any[] }) {
   const [state, action, pending] = useActionState(createPropertyAction, initialState);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -64,6 +65,19 @@ export function PropertyForm() {
               placeholder="skyline-luxury-villa"
             />
             <FieldError errors={state.fieldErrors?.slug} />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-700 md:col-span-2">
+            Property Owner
+            <select name="ownerId" className={inputClass} defaultValue="">
+              <option value="" disabled>Select an owner (Optional)</option>
+              {owners.map((owner) => (
+                <option key={owner.id} value={owner.id}>
+                  {owner.legal_name}
+                </option>
+              ))}
+            </select>
+            <FieldError errors={state.fieldErrors?.ownerId} />
           </label>
 
           <label className="block text-xs font-semibold text-slate-700">
@@ -123,6 +137,12 @@ export function PropertyForm() {
             Base Nightly Price (₹)
             <input name="basePrice" type="number" defaultValue="5000" min="0" step="100" className={inputClass} placeholder="5000" />
             <FieldError errors={state.fieldErrors?.basePrice} />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-700">
+            Management Commission (%)
+            <input name="managementCommissionPercent" type="number" defaultValue="20" min="0" max="100" step="0.5" className={inputClass} placeholder="20" />
+            <FieldError errors={state.fieldErrors?.managementCommissionPercent} />
           </label>
 
           <label className="block text-xs font-semibold text-slate-700">

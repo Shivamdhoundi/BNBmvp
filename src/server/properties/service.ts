@@ -8,7 +8,7 @@ export async function listProperties(organizationId: string) {
     .from("properties")
     .select(`
       id, name, slug, property_type, status, address_line_1, city, state, postal_code,
-      base_price, cleaning_fee, security_deposit, latitude, longitude, created_at,
+      base_price, cleaning_fee, security_deposit, management_commission_percent, latitude, longitude, created_at,
       property_units (id, name, bedrooms, bathrooms, max_guests, is_active),
       owners (id, legal_name, email, phone)
     `)
@@ -26,7 +26,7 @@ export async function getProperty(organizationId: string, propertyId: string) {
     .select(`
       id, name, slug, property_type, status, address_line_1, address_line_2, city, state,
       postal_code, country_code, latitude, longitude, timezone, check_in_time, check_out_time,
-      base_price, cleaning_fee, security_deposit, description, house_rules, created_at, updated_at,
+      base_price, cleaning_fee, security_deposit, management_commission_percent, description, house_rules, created_at, updated_at,
       property_units (id, name, bedrooms, bathrooms, max_guests, is_active),
       property_amenities (id, amenity_key, details),
       property_documents (id, file_name, storage_key, content_type, visibility, created_at),
@@ -84,6 +84,8 @@ export async function createProperty(context: OrganizationContext, input: Create
         security_deposit: String(input.securityDeposit || 0),
         description: input.description || null,
         house_rules: input.houseRules || null,
+        owner_id: input.ownerId || null,
+        management_commission_percent: String(input.managementCommissionPercent || 20),
         created_by: context.user.id,
       })
       .select("id")
@@ -157,6 +159,8 @@ export async function updateProperty(context: OrganizationContext, input: Update
   if (updates.checkOutTime !== undefined) patch.check_out_time = updates.checkOutTime;
   if (updates.description !== undefined) patch.description = updates.description;
   if (updates.houseRules !== undefined) patch.house_rules = updates.houseRules;
+  if (updates.ownerId !== undefined) patch.owner_id = updates.ownerId;
+  if (updates.managementCommissionPercent !== undefined) patch.management_commission_percent = String(updates.managementCommissionPercent);
   if (updates.latitude !== undefined) patch.latitude = updates.latitude ? String(updates.latitude) : null;
   if (updates.longitude !== undefined) patch.longitude = updates.longitude ? String(updates.longitude) : null;
 
