@@ -7,5 +7,5 @@ import { getSignedInUser } from "@/server/auth/context";
 export default async function OnboardingPage() {
   const user = await getSignedInUser();
   if (!user) redirect("/sign-in");
-  return <AuthShell eyebrow="One last step" title="Name your operation" description="This creates your private, tenant-isolated workspace. You’ll be its first administrator."><OrganizationForm /></AuthShell>;
+  return <AuthShell title="Name your operation" description="This creates your private, tenant-isolated workspace. You’ll be its first administrator."><OrganizationForm /></AuthShell>;
 }

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import type { AppRole } from "@/lib/permissions";
@@ -21,18 +22,28 @@ export async function getOrganizationContext(): Promise<OrganizationContext | nu
   const user = await getSignedInUser();
   if (!user) return null;
 
+  const cookieStore = await cookies();
+  const activeOrgId = cookieStore.get("staypilot_active_org_id")?.value;
+
   const supabase = await createClient();
-  const { data: membership, error: membershipError } = await supabase
+  let query = supabase
     .from("organization_members")
     .select("organization_id, role")
     .eq("user_id", user.id)
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .eq("status", "active");
 
-  if (membershipError) throw new Error("Unable to load organization membership.");
-  if (!membership) return null;
+  if (activeOrgId) {
+    query = query.eq("organization_id", activeOrgId);
+  }
+
+  // Load the active org if specified, otherwise load the first one they belong to 
+  // ONLY if they only have 1 (wait, let's just use the activeOrgId. If none, return null so they go to selection)
+  
+  if (!activeOrgId) return null;
+
+  const { data: membership, error: membershipError } = await query.single();
+
+  if (membershipError || !membership) return null;
 
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
@@ -57,7 +68,7 @@ export async function requireOrganizationContext(): Promise<OrganizationContext>
   const context = await getOrganizationContext();
   if (!context) {
     const user = await getSignedInUser();
-    redirect(user ? "/onboarding" : "/sign-in");
+    redirect(user ? "/select-profile" : "/sign-in");
   }
   return context;
 }

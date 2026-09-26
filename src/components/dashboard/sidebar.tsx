@@ -1,103 +1,122 @@
+"use client";
+
 import Link from "next/link";
-import { LayoutDashboard, Building2, Calendar, Sparkles, TrendingUp, Settings } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Users, 
+  UserCheck, 
+  CalendarCheck, 
+  Calendar, 
+  ReceiptText, 
+  Settings,
+  ChevronDown,
+  BarChart3,
+  Database
+} from "lucide-react";
 
 import { BrandMark } from "@/components/brand-mark";
-import { SignOutButton } from "@/components/dashboard/sign-out-button";
-import type { OrganizationContext } from "@/server/auth/context";
 
 const navigation = [
-  { href: "/dashboard", label: "Overview Hub", icon: LayoutDashboard, badge: "Live" },
-  { href: "/dashboard/properties", label: "Properties", icon: Building2, count: "14" },
-  { href: "/dashboard/bookings", label: "Bookings", icon: Calendar, badge: "98% Occ" },
-  { href: "/dashboard/guests", label: "Guests", icon: Sparkles },
-  { href: "/dashboard/owners", label: "Owners", icon: TrendingUp },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/properties", label: "Properties", icon: Building2 },
+  { href: "/dashboard/owners", label: "Owners", icon: UserCheck },
+  { href: "/dashboard/guests", label: "Guests", icon: Users },
+  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck },
+  { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
+  { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText },
 ];
 
-export function Sidebar({ context }: { context: OrganizationContext }) {
+export function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <aside className="flex min-h-screen w-full shrink-0 flex-col border-b border-slate-200/80 bg-white/90 backdrop-blur-lg px-4 py-5 lg:fixed lg:inset-y-0 lg:w-64 lg:border-r lg:border-b-0 shadow-sm z-40">
+    <aside className="flex min-h-screen w-full shrink-0 flex-col bg-slate-900 px-4 py-5 lg:fixed lg:inset-y-0 lg:w-64 z-40 text-slate-300">
       {/* Brand Header */}
-      <div className="px-2 pb-6 border-b border-slate-100">
-        <BrandMark href="/dashboard" />
-        {/* Workspace Selector Pill */}
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200/70 bg-slate-50/80 p-2.5 text-xs">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="h-6 w-6 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
-              {context.organization.name.substring(0, 2).toUpperCase()}
-            </div>
-            <span className="font-semibold text-slate-800 truncate">{context.organization.name}</span>
+      <div className="px-2 pb-6">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500 text-white font-bold">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor"/>
+              <path d="M8 12L11 15L16 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
-          <span className="rounded bg-rose-100/80 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 uppercase">
-            {context.role}
-          </span>
-        </div>
+          <span className="font-bold text-white text-xl tracking-tight">StayPilot</span>
+        </Link>
       </div>
 
       {/* Main Navigation */}
-      <nav className="mt-6 flex flex-col gap-1.5 flex-1">
-        <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Management
-        </div>
+      <nav className="mt-4 flex flex-col gap-1 flex-1">
         {navigation.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-rose-50/80 hover:text-rose-900"
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium transition-colors ${
+                isActive 
+                  ? "bg-slate-800 text-white" 
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100/80 text-slate-500 transition-colors group-hover:bg-rose-600 group-hover:text-white">
-                  <Icon className="h-4 w-4" />
-                </div>
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 group-hover:bg-rose-100 group-hover:text-rose-800">
-                  {item.badge}
-                </span>
-              )}
-              {item.count && (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 group-hover:bg-rose-100 group-hover:text-rose-800">
-                  {item.count}
-                </span>
-              )}
+              <Icon className={`h-5 w-5 ${isActive ? "text-rose-500" : "text-slate-500 group-hover:text-slate-400"}`} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
 
-        <div className="mt-6 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Organization
-        </div>
-        <Link
-          href="#settings"
-          className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 group-hover:bg-slate-200">
-            <Settings className="h-4 w-4" />
+        {/* Operations Dropdown */}
+        <div className="mt-2">
+          <button className="group flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
+            <div className="flex items-center gap-3">
+              <Settings className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
+              <span>Operations</span>
+            </div>
+            <ChevronDown className="h-4 w-4" />
+          </button>
+          <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
+            <Link href="/dashboard/cleaning" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning</Link>
+            <Link href="/dashboard/maintenance" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance</Link>
           </div>
-          <span>Workspace Settings</span>
-        </Link>
+        </div>
+
+        {/* Reports & Data */}
+        <div className="mt-2 flex flex-col gap-1">
+          <Link
+            href="/dashboard/reports"
+            className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors"
+          >
+            <BarChart3 className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
+            <span>Reports</span>
+          </Link>
+
+          <div className="mt-1">
+            <button className="group flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
+              <div className="flex items-center gap-3">
+                <Database className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
+                <span>My Data</span>
+              </div>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
+              <Link href="/dashboard/data" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export</Link>
+              <Link href="/dashboard/import" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Import Data</Link>
+            </div>
+          </div>
+        </div>
+
       </nav>
 
-      {/* Footer User Card */}
-      <div className="mt-auto border-t border-slate-100 pt-4 px-2">
-        <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5 border border-slate-200/60">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-600 font-bold text-white text-xs shadow-sm">
-            {(context.user.fullName ?? context.user.email ?? "U")[0].toUpperCase()}
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="truncate text-xs font-semibold text-slate-900">
-              {context.user.fullName ?? context.user.email ?? "Workspace Member"}
-            </p>
-            <p className="truncate text-[10px] text-slate-500">
-              {context.user.email}
-            </p>
-          </div>
-        </div>
-        <div className="mt-2.5">
-          <SignOutButton />
-        </div>
+      <div className="mt-auto pt-4">
+        <Link
+          href="/dashboard/settings"
+          className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors"
+        >
+          <Settings className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
+          <span>Settings</span>
+        </Link>
       </div>
     </aside>
   );
