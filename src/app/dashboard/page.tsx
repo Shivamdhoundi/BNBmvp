@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { can } from "@/lib/permissions";
-import { requireOrganizationContext } from "@/server/auth/context";
+import { getOrganizationContext } from "@/server/auth/context";
 import { listProperties } from "@/server/properties/service";
 
 // High-end demo properties for visualization & operational demo
