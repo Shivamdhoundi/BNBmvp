@@ -18,9 +18,7 @@ export async function getSignedInUser() {
   return user;
 }
 
-import { cache } from "react";
-
-export const getOrganizationContext = cache(async (): Promise<OrganizationContext | null> => {
+export async function getOrganizationContext(): Promise<OrganizationContext | null> {
   const user = await getSignedInUser();
   if (!user) return null;
 
@@ -36,7 +34,7 @@ export const getOrganizationContext = cache(async (): Promise<OrganizationContex
     .from("organization_members")
     .select(`
       role,
-      organizations!inner (id, name, slug)
+      organizations:organizations!inner (id, name, slug)
     `)
     .eq("user_id", user.id)
     .eq("status", "active")
@@ -45,16 +43,21 @@ export const getOrganizationContext = cache(async (): Promise<OrganizationContex
 
   if (error || !data) return null;
 
+  // Handle Supabase returning an array for joined tables in some PostgREST versions
+  const orgData = Array.isArray(data.organizations) ? data.organizations[0] : data.organizations;
+
+  if (!orgData) return null;
+
   return {
     user: {
       id: user.id,
       email: user.email,
       fullName: typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : undefined,
     },
-    organization: data.organizations as any,
+    organization: orgData as { id: string; name: string; slug: string },
     role: data.role as AppRole,
   };
-});
+}
 
 export async function requireOrganizationContext(): Promise<OrganizationContext> {
   const context = await getOrganizationContext();
