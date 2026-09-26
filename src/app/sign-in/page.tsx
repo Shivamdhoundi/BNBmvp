@@ -7,8 +7,8 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
   return (
     <AuthShell 
       mode="centered"
-      title="Welcome back" 
-      description="Log in to your account"
+      title="StayPilot Operations" 
+      description="Enter your master password to access the platform."
     >
       <SignInForm nextPath={nextPath} />
     </AuthShell>

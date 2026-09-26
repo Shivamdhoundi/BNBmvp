@@ -2,20 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Bell, ChevronDown, CheckCircle2, Sparkles, User, Settings, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown, CheckCircle2, Sparkles, User, Settings, LogOut, Menu } from "lucide-react";
 import type { OrganizationContext } from "@/server/auth/context";
 import { SignOutButton } from "@/components/dashboard/sign-out-button";
 import { useRouter } from "next/navigation";
 
-export function Topbar({ context }: { context?: OrganizationContext }) {
+export function Topbar({ context, onMenuClick }: { context?: OrganizationContext; onMenuClick?: () => void }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white px-6">
-      {/* Search Input */}
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative w-full max-w-xs">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white px-4 sm:px-6">
+      <div className="flex items-center gap-4 flex-1">
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={onMenuClick}
+          className="lg:hidden -ml-2 p-2 text-slate-600 hover:bg-slate-100 rounded-md"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        {/* Search Input */}
+        <div className="relative w-full max-w-xs hidden sm:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"

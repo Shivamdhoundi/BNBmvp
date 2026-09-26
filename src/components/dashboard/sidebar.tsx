@@ -28,11 +28,11 @@ const navigation = [
   { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText },
 ];
 
-export function Sidebar() {
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex min-h-screen w-full shrink-0 flex-col bg-slate-900 px-4 py-5 lg:fixed lg:inset-y-0 lg:w-64 z-40 text-slate-300">
+    <aside className="flex h-full w-full flex-col bg-slate-900 px-4 py-5 text-slate-300">
       {/* Brand Header */}
       <div className="px-2 pb-6">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -55,6 +55,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium transition-colors ${
                 isActive 
                   ? "bg-slate-800 text-white" 
@@ -77,8 +78,8 @@ export function Sidebar() {
             <ChevronDown className="h-4 w-4" />
           </button>
           <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-            <Link href="/dashboard/cleaning" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning</Link>
-            <Link href="/dashboard/maintenance" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance</Link>
+            <Link href="/dashboard/cleaning" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning</Link>
+            <Link href="/dashboard/maintenance" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance</Link>
           </div>
         </div>
 
@@ -86,6 +87,7 @@ export function Sidebar() {
         <div className="mt-2 flex flex-col gap-1">
           <Link
             href="/dashboard/reports"
+            onClick={onNavigate}
             className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors"
           >
             <BarChart3 className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
@@ -101,8 +103,8 @@ export function Sidebar() {
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-              <Link href="/dashboard/data" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export</Link>
-              <Link href="/dashboard/import" className="block py-2 text-sm text-slate-500 hover:text-slate-300">Import Data</Link>
+              <Link href="/dashboard/data" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export</Link>
+              <Link href="/dashboard/import" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Import Data</Link>
             </div>
           </div>
         </div>
@@ -112,6 +114,7 @@ export function Sidebar() {
       <div className="mt-auto pt-4">
         <Link
           href="/dashboard/settings"
+          onClick={onNavigate}
           className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors"
         >
           <Settings className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
