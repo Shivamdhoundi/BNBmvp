@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Bell, ChevronDown, CheckCircle2, Sparkles, User, Settings, LogOut, Menu } from "lucide-react";
+import { Search, Bell, ChevronDown, CheckCircle2, User, Settings, Menu } from "lucide-react";
 import type { OrganizationContext } from "@/server/auth/context";
 import { SignOutButton } from "@/components/dashboard/sign-out-button";
-import { useRouter } from "next/navigation";
 
 export function Topbar({ context, onMenuClick }: { context?: OrganizationContext; onMenuClick?: () => void }) {
   const [showNotifications, setShowNotifications] = useState(false);

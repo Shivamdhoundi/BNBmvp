@@ -16,6 +16,7 @@ import {
 import { can } from "@/lib/permissions";
 import { getOrganizationContext } from "@/server/auth/context";
 import { listProperties } from "@/server/properties/service";
+import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 
 // High-end demo properties for visualization & operational demo
 const showcaseProperties = [
@@ -85,12 +86,20 @@ const showcaseProperties = [
   },
 ];
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default async function DashboardPage() {
   const context = await getOrganizationContext();
   if (!context) return null; // Let the layout handle the redirect
   const dbProperties = await listProperties(context.organization.id);
   
   const totalCount = dbProperties.length || 14;
+  const greeting = getGreeting();
 
   return (
     <div className="space-y-8 pb-12">
@@ -102,7 +111,7 @@ export default async function DashboardPage() {
             <span>Operations Command Center</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900">
-            Good afternoon, {context.user.fullName || "Operator"}.
+            {greeting}, {context.user.fullName || "Operator"}.
           </h1>
           <p className="max-w-xl text-sm text-slate-500 leading-relaxed">
             Here&apos;s what&apos;s happening today across your <span className="font-semibold text-rose-600">{totalCount} properties</span> in Gurugram & Delhi NCR.
@@ -119,10 +128,10 @@ export default async function DashboardPage() {
               Add New Property
             </Link>
           )}
-          <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-300">
+          <ComingSoonButton className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700">
             <RefreshCw className="h-4 w-4 text-slate-400" />
             <span>Sync Channels</span>
-          </button>
+          </ComingSoonButton>
         </div>
       </div>
 

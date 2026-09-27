@@ -16,8 +16,6 @@ import {
   Database
 } from "lucide-react";
 
-import { BrandMark } from "@/components/brand-mark";
-
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/properties", label: "Properties", icon: Building2 },
@@ -25,8 +23,16 @@ const navigation = [
   { href: "/dashboard/guests", label: "Guests", icon: Users },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
-  { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText },
+  { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText, soon: true },
 ];
+
+function SoonBadge() {
+  return (
+    <span className="ml-auto rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+      Soon
+    </span>
+  );
+}
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -64,6 +70,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             >
               <Icon className={`h-5 w-5 ${isActive ? "text-rose-500" : "text-slate-500 group-hover:text-slate-400"}`} />
               <span>{item.label}</span>
+              {item.soon ? <SoonBadge /> : null}
             </Link>
           );
         })}
@@ -78,8 +85,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <ChevronDown className="h-4 w-4" />
           </button>
           <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-            <Link href="/dashboard/cleaning" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning</Link>
-            <Link href="/dashboard/maintenance" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance</Link>
+            <Link href="/dashboard/cleaning" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning<SoonBadge /></Link>
+            <Link href="/dashboard/maintenance" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance<SoonBadge /></Link>
           </div>
         </div>
 
@@ -92,6 +99,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           >
             <BarChart3 className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
             <span>Reports</span>
+            <SoonBadge />
           </Link>
 
           <div className="mt-1">
@@ -103,8 +111,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-              <Link href="/dashboard/data" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export</Link>
-              <Link href="/dashboard/import" onClick={onNavigate} className="block py-2 text-sm text-slate-500 hover:text-slate-300">Import Data</Link>
+              <Link href="/dashboard/data" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export<SoonBadge /></Link>
+              <Link href="/dashboard/import" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Import Data<SoonBadge /></Link>
             </div>
           </div>
         </div>
@@ -119,6 +127,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           <Settings className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
           <span>Settings</span>
+          <SoonBadge />
         </Link>
       </div>
     </aside>

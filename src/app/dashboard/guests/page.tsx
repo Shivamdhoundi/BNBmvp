@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { Plus, User } from "lucide-react";
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listGuests } from "@/server/guests/service";
+import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 
 export default async function GuestsPage() {
   const context = await requireOrganizationContext();
@@ -21,10 +23,13 @@ export default async function GuestsPage() {
         </div>
 
         {can(context.role, "guests:create") && (
-          <button className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700">
+          <Link
+            href="/dashboard/guests/new"
+            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700"
+          >
             <Plus className="h-4 w-4" />
             <span>Add Guest</span>
-          </button>
+          </Link>
         )}
       </div>
 
@@ -53,9 +58,9 @@ export default async function GuestsPage() {
             </div>
             
             <div className="mt-6 flex items-center gap-4 text-sm border-t border-slate-100 pt-4">
-              <button className="font-bold text-slate-900 hover:text-rose-600 transition">
+              <ComingSoonButton className="font-bold text-slate-900">
                 View Profile →
-              </button>
+              </ComingSoonButton>
             </div>
           </div>
         ))}

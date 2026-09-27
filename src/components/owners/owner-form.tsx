@@ -1,0 +1,77 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { createOwnerAction, type OwnerFormState } from "@/app/dashboard/owners/actions";
+
+const initialState: OwnerFormState = {};
+
+const inputClass =
+  "mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10";
+
+function FieldError({ errors }: { errors?: string[] }) {
+  return errors?.[0] ? <p className="mt-1.5 text-xs text-red-700">{errors[0]}</p> : null;
+}
+
+export function OwnerForm() {
+  const [state, action, pending] = useActionState(createOwnerAction, initialState);
+
+  return (
+    <form action={action} className="space-y-6">
+      <div className="grid gap-5 md:grid-cols-2">
+        <label className="block text-xs font-semibold text-slate-700 md:col-span-2">
+          Legal Name
+          <input
+            name="legalName"
+            required
+            minLength={2}
+            maxLength={160}
+            className={inputClass}
+            placeholder="e.g. Rohan Malhotra"
+          />
+          <FieldError errors={state.fieldErrors?.legalName} />
+        </label>
+
+        <label className="block text-xs font-semibold text-slate-700">
+          Email Address
+          <input
+            name="email"
+            type="email"
+            required
+            maxLength={240}
+            className={inputClass}
+            placeholder="owner@example.com"
+          />
+          <FieldError errors={state.fieldErrors?.email} />
+        </label>
+
+        <label className="block text-xs font-semibold text-slate-700">
+          Phone <span className="font-normal text-slate-400">(optional)</span>
+          <input name="phone" maxLength={30} className={inputClass} placeholder="+91 98765 43210" />
+          <FieldError errors={state.fieldErrors?.phone} />
+        </label>
+
+        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 md:col-span-2">
+          <input name="isActive" type="checkbox" defaultChecked value="true" className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500" />
+          Active partner
+        </label>
+      </div>
+
+      {state.formError && (
+        <p role="alert" className="rounded-xl bg-red-50 p-4 text-xs font-semibold text-red-700">
+          {state.formError}
+        </p>
+      )}
+
+      <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-xl bg-rose-600 px-6 py-3 text-xs font-bold text-white shadow-md transition hover:bg-rose-700 disabled:opacity-50"
+        >
+          {pending ? "Saving owner…" : "Save owner"}
+        </button>
+      </div>
+    </form>
+  );
+}

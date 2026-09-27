@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { Plus, Calendar, Clock, MapPin } from "lucide-react";
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listBookings } from "@/server/bookings/service";
+import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 
 type BookingItem = {
   id: string;
@@ -34,11 +36,14 @@ export default async function BookingsPage() {
           </p>
         </div>
 
-        {can(context.role, "properties:create") && (
-          <button className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700">
+        {can(context.role, "bookings:create") && (
+          <Link
+            href="/dashboard/bookings/new"
+            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700"
+          >
             <Plus className="h-4 w-4" />
             <span>New Booking</span>
-          </button>
+          </Link>
         )}
       </div>
 
@@ -101,9 +106,9 @@ export default async function BookingsPage() {
               <span className="font-bold text-lg text-slate-900">
                 ₹{booking.total_price}
               </span>
-              <button className="font-bold text-slate-900 hover:text-rose-600 transition">
+              <ComingSoonButton className="font-bold text-slate-900">
                 Details →
-              </button>
+              </ComingSoonButton>
             </div>
           </div>
         ))}

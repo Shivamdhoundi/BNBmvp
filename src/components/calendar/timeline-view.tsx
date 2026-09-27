@@ -1,8 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { format, addDays, startOfMonth, eachDayOfInterval, isSameDay, differenceInDays, isBefore, isAfter } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  format,
+  addDays,
+  eachDayOfInterval,
+  isSameDay,
+  differenceInDays,
+  isBefore,
+  isAfter,
+  isWeekend,
+  startOfWeek,
+} from "date-fns";
+import { ChevronLeft, ChevronRight, CalendarDays, Home } from "lucide-react";
 import Link from "next/link";
 
 interface Booking {
@@ -28,158 +38,234 @@ interface TimelineViewProps {
   bookings: Booking[];
 }
 
+const STATUS_LEGEND = [
+  { label: "Confirmed", dot: "bg-rose-500" },
+  { label: "Pending", dot: "bg-amber-400" },
+  { label: "Completed", dot: "bg-emerald-500" },
+  { label: "Cancelled", dot: "bg-slate-300" },
+];
+
+const VIEW_DAYS = 21;
+
+function bookingClasses(status: string) {
+  switch (status) {
+    case "confirmed":
+      return "bg-rose-500 text-white ring-rose-600/20";
+    case "pending":
+      return "bg-amber-400 text-amber-950 ring-amber-500/20";
+    case "completed":
+      return "bg-emerald-500 text-white ring-emerald-600/20";
+    case "cancelled":
+      return "bg-slate-200 text-slate-500 line-through ring-slate-300/40";
+    default:
+      return "bg-sky-500 text-white ring-sky-600/20";
+  }
+}
+
 export function TimelineView({ properties, bookings }: TimelineViewProps) {
-  const [currentDate, setCurrentDate] = useState(() => startOfMonth(new Date()));
+  // Start on the week containing today so bookings are immediately visible.
+  const [startDate, setStartDate] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  // Generate days for the current view (we'll do a 30 day sliding window)
-  const days = useMemo(() => {
-    return eachDayOfInterval({
-      start: currentDate,
-      end: addDays(currentDate, 30),
-    });
-  }, [currentDate]);
+  const days = useMemo(
+    () => eachDayOfInterval({ start: startDate, end: addDays(startDate, VIEW_DAYS - 1) }),
+    [startDate]
+  );
 
-  const handlePrev = () => setCurrentDate((d) => addDays(d, -7));
-  const handleNext = () => setCurrentDate((d) => addDays(d, 7));
-  const handleToday = () => setCurrentDate(startOfMonth(new Date()));
+  const handlePrev = () => setStartDate((d) => addDays(d, -7));
+  const handleNext = () => setStartDate((d) => addDays(d, 7));
+  const handleToday = () => setStartDate(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  const getBookingStyle = (booking: Booking) => {
+  const rangeLabel = `${format(days[0], "d MMM")} – ${format(days[days.length - 1], "d MMM yyyy")}`;
+  const monthLabel = format(days[Math.floor(days.length / 2)], "MMMM yyyy");
+
+  const nights = (b: Booking) =>
+    Math.max(1, differenceInDays(new Date(b.check_out_date), new Date(b.check_in_date)));
+
+  const getBookingSpan = (booking: Booking) => {
     const checkIn = new Date(booking.check_in_date);
     const checkOut = new Date(booking.check_out_date);
-    
-    // Calculate start position relative to timeline start
+
     let startOffset = differenceInDays(checkIn, days[0]);
     let duration = differenceInDays(checkOut, checkIn);
-    
-    // Handle bookings that start before our view
+
     if (startOffset < 0) {
-      duration += startOffset; // Reduce duration by the days out of view
+      duration += startOffset;
       startOffset = 0;
     }
-    
-    // Handle bookings that end after our view
     if (startOffset + duration > days.length) {
       duration = days.length - startOffset;
     }
-    
-    // +2 because grid columns are 1-indexed and column 1 is the property info sidebar
+
     return {
       gridColumnStart: startOffset + 2,
       gridColumnEnd: startOffset + 2 + duration,
     };
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'bg-rose-500 border-rose-600 text-white';
-      case 'pending': return 'bg-amber-100 border-amber-200 text-amber-800';
-      case 'completed': return 'bg-emerald-100 border-emerald-200 text-emerald-800';
-      case 'cancelled': return 'bg-slate-100 border-slate-200 text-slate-500 line-through';
-      default: return 'bg-blue-100 border-blue-200 text-blue-800';
-    }
-  };
-
   return (
     <div className="flex h-full flex-col bg-white">
       {/* Toolbar */}
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold text-slate-900">
-            {format(currentDate, "MMMM yyyy")}
-          </h2>
-          <div className="flex items-center gap-1 rounded-lg border border-slate-200 p-1">
-            <button onClick={handlePrev} className="rounded p-1 text-slate-500 hover:bg-slate-100">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-5 w-5 text-rose-500" />
+            <h2 className="text-lg font-bold text-slate-900">{monthLabel}</h2>
+          </div>
+          <div className="flex items-center gap-1 rounded-full border border-slate-200 p-1 shadow-sm">
+            <button
+              onClick={handlePrev}
+              aria-label="Previous week"
+              className="grid h-8 w-8 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 active:scale-95"
+            >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button onClick={handleToday} className="px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded">
+            <button
+              onClick={handleToday}
+              className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-95"
+            >
               Today
             </button>
-            <button onClick={handleNext} className="rounded p-1 text-slate-500 hover:bg-slate-100">
+            <button
+              onClick={handleNext}
+              aria-label="Next week"
+              className="grid h-8 w-8 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 active:scale-95"
+            >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
+          <span className="hidden text-sm text-slate-400 md:inline">{rangeLabel}</span>
         </div>
-      </div>
 
-      {/* Grid Area */}
-      <div className="flex-1 overflow-auto relative">
-        <div 
-          className="min-w-max"
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: `250px repeat(${days.length}, minmax(48px, 1fr))`,
-          }}
-        >
-          {/* Header Row */}
-          <div className="sticky top-0 z-20 col-span-1 border-b border-r border-slate-200 bg-slate-50 p-4 font-semibold text-slate-700 text-sm">
-            Property
-          </div>
-          {days.map((day, i) => (
-            <div 
-              key={i} 
-              className={`sticky top-0 z-10 border-b border-r border-slate-100 bg-slate-50 py-2 text-center text-sm ${
-                isSameDay(day, new Date()) ? 'bg-rose-50 text-rose-600 font-bold' : 'text-slate-500'
-              }`}
-            >
-              <div className="text-xs uppercase">{format(day, "EEE")}</div>
-              <div>{format(day, "d")}</div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {STATUS_LEGEND.map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <span className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />
+              <span className="text-xs font-medium text-slate-500">{item.label}</span>
             </div>
           ))}
-
-          {/* Property Rows */}
-          {properties.map((property, pIdx) => {
-            const propertyBookings = bookings.filter(b => b.property_id === property.id && 
-              // Only include bookings that overlap with our current view
-              !isBefore(new Date(b.check_out_date), days[0]) && 
-              !isAfter(new Date(b.check_in_date), days[days.length - 1])
-            );
-
-            return (
-              <div key={property.id} className="contents group">
-                {/* Property Sidebar Info */}
-                <div className="sticky left-0 z-10 col-span-1 border-b border-r border-slate-200 bg-white p-4 group-hover:bg-slate-50 flex flex-col justify-center">
-                  <span className="truncate font-semibold text-slate-900">{property.name}</span>
-                  <span className="truncate text-xs text-slate-500">{property.city}</span>
-                </div>
-
-                {/* Grid Cells for this row */}
-                {days.map((day, dIdx) => (
-                  <div 
-                    key={dIdx} 
-                    className={`border-b border-r border-slate-100 group-hover:bg-slate-50/50 ${
-                      isSameDay(day, new Date()) ? 'bg-rose-50/20' : ''
-                    }`}
-                    style={{ gridColumn: dIdx + 2 }}
-                  />
-                ))}
-
-                {/* Bookings for this property */}
-                {propertyBookings.map((booking) => {
-                  const style = getBookingStyle(booking);
-                  if (style.gridColumnEnd <= style.gridColumnStart) return null; // Outside view completely
-                  
-                  return (
-                    <Link
-                      href={`/dashboard/bookings/${booking.id}`}
-                      key={booking.id}
-                      className={`z-10 m-1 flex items-center overflow-hidden rounded-md border px-2 py-1 text-xs font-semibold shadow-sm transition hover:brightness-95 ${getStatusColor(booking.status)}`}
-                      style={{
-                        ...style,
-                        gridRow: pIdx + 2, // +2 because row 1 is header
-                      }}
-                      title={`${booking.guests?.first_name} ${booking.guests?.last_name} - ${booking.status}`}
-                    >
-                      <span className="truncate">
-                        {booking.guests?.first_name} {booking.guests?.last_name}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            );
-          })}
         </div>
       </div>
+
+      {properties.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+            <Home className="h-6 w-6 text-slate-400" />
+          </div>
+          <h3 className="text-base font-semibold text-slate-900">No properties yet</h3>
+          <p className="max-w-sm text-sm text-slate-500">
+            Add a property to start tracking availability and bookings on the calendar.
+          </p>
+          <Link
+            href="/dashboard/properties/new"
+            className="mt-1 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Add your first property
+          </Link>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto scroll-smooth">
+          <div
+            className="min-w-max"
+            style={{
+              display: "grid",
+              gridTemplateColumns: `240px repeat(${days.length}, minmax(52px, 1fr))`,
+            }}
+          >
+            {/* Header: Property label cell */}
+            <div className="sticky left-0 top-0 z-30 col-span-1 border-b border-r border-slate-100 bg-white/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur">
+              Property
+            </div>
+            {/* Header: day cells */}
+            {days.map((day, i) => {
+              const today = isSameDay(day, new Date());
+              return (
+                <div
+                  key={i}
+                  className={`sticky top-0 z-10 border-b border-slate-100 py-2 text-center backdrop-blur transition ${
+                    today ? "bg-rose-50" : isWeekend(day) ? "bg-slate-50/70" : "bg-white/95"
+                  }`}
+                >
+                  <div className={`text-[10px] font-medium uppercase tracking-wide ${today ? "text-rose-500" : "text-slate-400"}`}>
+                    {format(day, "EEE")}
+                  </div>
+                  <div
+                    className={`mx-auto mt-0.5 grid h-7 w-7 place-items-center rounded-full text-sm font-semibold ${
+                      today ? "bg-rose-500 text-white shadow-sm" : "text-slate-700"
+                    }`}
+                  >
+                    {format(day, "d")}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Property rows */}
+            {properties.map((property, pIdx) => {
+              const propertyBookings = bookings.filter(
+                (b) =>
+                  b.property_id === property.id &&
+                  !isBefore(new Date(b.check_out_date), days[0]) &&
+                  !isAfter(new Date(b.check_in_date), days[days.length - 1])
+              );
+
+              return (
+                <div key={property.id} className="contents group">
+                  {/* Sidebar cell */}
+                  <div className="sticky left-0 z-20 col-span-1 flex flex-col justify-center border-b border-r border-slate-100 bg-white px-4 py-4 transition group-hover:bg-slate-50">
+                    <span className="truncate text-sm font-semibold text-slate-900">{property.name}</span>
+                    <span className="truncate text-xs text-slate-400">{property.city}</span>
+                  </div>
+
+                  {/* Day cells */}
+                  {days.map((day, dIdx) => (
+                    <div
+                      key={dIdx}
+                      className={`min-h-[64px] border-b border-r border-slate-50 transition group-hover:bg-slate-50/40 ${
+                        isSameDay(day, new Date())
+                          ? "bg-rose-50/40"
+                          : isWeekend(day)
+                            ? "bg-slate-50/40"
+                            : ""
+                      }`}
+                      style={{ gridColumn: dIdx + 2 }}
+                    />
+                  ))}
+
+                  {/* Booking pills */}
+                  {propertyBookings.map((booking) => {
+                    const span = getBookingSpan(booking);
+                    if (span.gridColumnEnd <= span.gridColumnStart) return null;
+
+                    const first = booking.guests?.first_name ?? "Guest";
+                    const last = booking.guests?.last_name ?? "";
+                    const guestName = `${first} ${last}`.trim();
+                    const initials = `${first[0] ?? "G"}${last[0] ?? ""}`.toUpperCase();
+                    const nightCount = nights(booking);
+
+                    return (
+                      <Link
+                        href={`/dashboard/bookings`}
+                        key={booking.id}
+                        className={`z-10 my-2 flex items-center gap-2 self-center overflow-hidden rounded-full px-2.5 py-1.5 text-xs font-semibold shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-md ${bookingClasses(
+                          booking.status
+                        )}`}
+                        style={{ ...span, gridRow: pIdx + 2 }}
+                        title={`${guestName} · ${booking.status} · ${format(new Date(booking.check_in_date), "d MMM")} → ${format(new Date(booking.check_out_date), "d MMM")} (${nightCount} night${nightCount > 1 ? "s" : ""})`}
+                      >
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/25 text-[10px] font-bold">
+                          {initials}
+                        </span>
+                        <span className="truncate">{guestName}</span>
+                        <span className="ml-auto shrink-0 text-[10px] opacity-80">{nightCount}n</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
