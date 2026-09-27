@@ -72,3 +72,23 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/sign-in");
 }
+
+export async function signInWithGoogle(nextPath?: string) {
+  const supabase = await createClient();
+  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/callback${nextPath ? `?next=${nextPath}` : ""}`;
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: redirectUrl,
+    },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
+}
