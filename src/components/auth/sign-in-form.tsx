@@ -14,8 +14,8 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     setIsLoading(true);
     setError(undefined);
     
-    // Inject the hardcoded email
-    formData.set("email", "admin@staypilot.com");
+    // Remove hardcoded email
+    // formData.set("email", "admin@staypilot.com");
 
     const result = await signIn(formData, nextPath);
     if (result?.error) {
@@ -28,7 +28,19 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     <div className="space-y-5">
       <form action={onSubmit} className="space-y-5">
         <label className="block text-sm font-semibold text-slate-900">
-          Master Password
+          Email Address
+          <input 
+            name="email" 
+            type="email" 
+            required 
+            autoComplete="email" 
+            className="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-50" 
+            placeholder="you@company.com" 
+          />
+        </label>
+
+        <label className="block text-sm font-semibold text-slate-900">
+          Password
           <input 
             name="password" 
             type="password" 

@@ -4,15 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signIn(formData: FormData, nextPath?: string) {
-  const email = String(formData.get("email") || "admin@staypilot.com");
-  // Trim spaces and remove surrounding quotes in case the user pasted them
-  const rawPassword = String(formData.get("password"));
-  const password = rawPassword.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-
-  if (password !== "SHIVAMD0N@123") {
-    console.error(`Received password: [${password}] instead of [SHIVAMD0N@123]`);
-    return { error: "Invalid master password." };
-  }
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
 
   const supabase = await createClient();
   
