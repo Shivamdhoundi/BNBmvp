@@ -15,7 +15,7 @@ function FieldError({ errors }: { errors?: string[] }) {
   return errors?.[0] ? <p className="mt-1.5 text-xs text-red-700">{errors[0]}</p> : null;
 }
 
-const inputClass = "mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-500/10";
+const inputClass = "mt-1.5 block min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-base text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-500/10 sm:text-sm";
 
 export function PropertyForm({ owners = [] }: { owners?: any[] }) {
   const [state, action, pending] = useActionState(createPropertyAction, initialState);
@@ -251,7 +251,7 @@ export function PropertyForm({ owners = [] }: { owners?: any[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-3 text-xs font-bold text-white shadow-md transition hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50"
+          className="min-h-11 w-full rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 sm:w-auto sm:text-xs"
         >
           {pending ? "Creating Property Record…" : "Save Property Record"}
         </button>

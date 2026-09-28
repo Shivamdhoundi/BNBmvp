@@ -39,7 +39,7 @@ export default async function BookingsPage() {
         {can(context.role, "bookings:create") && (
           <Link
             href="/dashboard/bookings/new"
-            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             <span>New Booking</span>
@@ -54,17 +54,17 @@ export default async function BookingsPage() {
             key={booking.id}
             className="group relative flex flex-col overflow-hidden bg-white rounded-3xl border border-slate-200 p-6 transition-all duration-300 hover:border-rose-300 hover:shadow-lg"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg leading-tight">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="break-words text-lg font-bold leading-tight text-slate-900">
                   {booking.properties?.name || 'Unknown Property'}
                 </h3>
-                <p className="flex items-center gap-1 text-sm text-slate-500 mt-1">
-                  <MapPin className="h-3 w-3" />
-                  {booking.properties?.city}, {booking.properties?.state}
+                <p className="mt-1 flex items-start gap-1 text-sm text-slate-500">
+                  <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+                  <span className="break-words">{booking.properties?.city}, {booking.properties?.state}</span>
                 </p>
               </div>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-sm border ${
+              <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold shadow-sm ${
                 booking.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                 booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                 'bg-slate-50 text-slate-700 border-slate-200'
@@ -94,9 +94,9 @@ export default async function BookingsPage() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-sm pt-2">
-                <span className="text-slate-600">Guest</span>
-                <span className="font-semibold text-slate-900">
+              <div className="flex items-start justify-between gap-3 pt-2 text-sm">
+                <span className="shrink-0 text-slate-600">Guest</span>
+                <span className="break-words text-right font-semibold text-slate-900">
                   {booking.guests?.first_name} {booking.guests?.last_name}
                 </span>
               </div>

@@ -7,7 +7,7 @@ import { createGuestAction, type GuestFormState } from "@/app/dashboard/guests/a
 const initialState: GuestFormState = {};
 
 const inputClass =
-  "mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10";
+  "mt-1.5 block min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-base text-slate-900 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 sm:text-sm";
 
 function FieldError({ errors }: { errors?: string[] }) {
   return errors?.[0] ? <p className="mt-1.5 text-xs text-red-700">{errors[0]}</p> : null;
@@ -59,7 +59,7 @@ export function GuestForm() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-rose-600 px-6 py-3 text-xs font-bold text-white shadow-md transition hover:bg-rose-700 disabled:opacity-50"
+          className="min-h-11 w-full rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-rose-700 disabled:opacity-50 sm:w-auto sm:text-xs"
         >
           {pending ? "Saving guest…" : "Save guest"}
         </button>

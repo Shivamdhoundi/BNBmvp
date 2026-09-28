@@ -18,27 +18,25 @@ export default async function CalendarPage() {
   ]);
 
   return (
-    <div className="flex flex-col h-full min-h-[calc(100vh-64px)]">
-      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 px-8 py-6">
-        <div>
+    <div className="flex min-h-[calc(100dvh-5rem)] min-w-0 flex-col">
+      <header className="flex shrink-0 flex-col gap-4 px-1 pb-5 pt-1 sm:flex-row sm:items-center sm:justify-between sm:px-2 sm:py-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Calendar</h1>
-          <p className="text-sm text-slate-500">Availability and reservations across your properties</p>
+          <p className="mt-1 text-sm text-slate-500">Availability and reservations across your properties</p>
         </div>
-        <div className="flex items-center gap-3">
-          {can(context.role, "bookings:create") && (
-            <Link
-              href="/dashboard/bookings/new"
-              className="flex items-center gap-2 rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 active:scale-95"
-            >
-              <Plus className="h-4 w-4" />
-              New Booking
-            </Link>
-          )}
-        </div>
+        {can(context.role, "bookings:create") && (
+          <Link
+            href="/dashboard/bookings/new"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 active:scale-95 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            New Booking
+          </Link>
+        )}
       </header>
 
-      <main className="flex-1 px-6 pb-8">
-        <div className="flex h-[640px] flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm">
+      <main className="min-w-0 flex-1 pb-4 sm:px-2 sm:pb-8">
+        <div className="flex min-h-[34rem] flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm sm:h-[640px] sm:rounded-3xl">
           <TimelineView properties={properties} bookings={bookings} />
         </div>
       </main>

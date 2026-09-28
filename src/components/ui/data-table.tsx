@@ -88,23 +88,20 @@ export function DataTable<TData, TValue>({
             <input
               placeholder={searchPlaceholder}
               value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn(searchKey)?.setFilterValue(event.target.value)
-              }
-              className="h-10 w-full md:w-[300px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-shadow"
+              onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-500 transition-shadow focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 sm:h-10 sm:w-[300px] sm:text-sm"
             />
           ) : (
              <input
               placeholder={searchPlaceholder}
               value={globalFilter ?? ""}
               onChange={(event) => setGlobalFilter(event.target.value)}
-              className="h-10 w-full md:w-[300px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-shadow"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-500 transition-shadow focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 sm:h-10 sm:w-[300px] sm:text-sm"
             />
           )}
         </div>
         
-        <div className="flex items-center space-x-2">
-          {/* Bulk Actions */}
+        <div className="flex w-full items-center justify-end space-x-2 sm:w-auto">
           {selectedRows.length > 0 && bulkActions.length > 0 && (
             <div className="flex items-center space-x-2 mr-2 border-r border-slate-200 pr-4">
               <span className="text-sm text-slate-500 mr-2">{selectedRows.length} selected</span>
@@ -165,9 +162,10 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table Content */}
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm shadow-slate-100">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+      <p className="text-xs text-slate-400 sm:hidden">Swipe horizontally to view all columns.</p>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-100">
+        <div className="overflow-x-auto overscroll-x-contain">
+          <table className="min-w-[760px] w-full text-left text-sm">
             <thead className="bg-slate-50/50 text-slate-500 border-b border-slate-200">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
@@ -251,65 +249,32 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
-        <div className="flex-1 text-sm text-slate-500">
+      <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
+        <div className="hidden flex-1 text-sm text-slate-500 sm:block">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium text-slate-700">Rows per page</p>
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-6 lg:gap-8">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-medium text-slate-600 sm:text-sm">Rows</p>
             <select
               value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
-              className="h-8 w-[70px] rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+              className="h-9 w-[64px] rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
             >
               {[10, 20, 30, 40, 50].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
+                <option key={pageSize} value={pageSize}>{pageSize}</option>
               ))}
             </select>
           </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium text-slate-700">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+          <div className="text-xs font-medium text-slate-700 sm:text-sm">
+            Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-              className="hidden h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 lg:flex"
-            >
-              <span className="sr-only">Go to first page</span>
-              <ChevronsLeft className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50"
-            >
-              <span className="sr-only">Go to previous page</span>
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50"
-            >
-              <span className="sr-only">Go to next page</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-              className="hidden h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 lg:flex"
-            >
-              <span className="sr-only">Go to last page</span>
-              <ChevronsRight className="h-4 w-4" />
-            </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="hidden h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 lg:flex"><span className="sr-only">Go to first page</span><ChevronsLeft className="h-4 w-4" /></button>
+            <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 sm:h-9 sm:w-9"><span className="sr-only">Go to previous page</span><ChevronLeft className="h-4 w-4" /></button>
+            <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 sm:h-9 sm:w-9"><span className="sr-only">Go to next page</span><ChevronRight className="h-4 w-4" /></button>
+            <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="hidden h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 lg:flex"><span className="sr-only">Go to last page</span><ChevronsRight className="h-4 w-4" /></button>
           </div>
         </div>
       </div>

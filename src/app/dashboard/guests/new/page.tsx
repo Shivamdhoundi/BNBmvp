@@ -24,9 +24,9 @@ export default async function NewGuestPage() {
       <Link href="/dashboard/guests" className="text-sm font-medium text-rose-600 hover:underline">
         ← Back to guests
       </Link>
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-8">
         <p className="text-sm font-medium text-rose-600">New guest</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Add a guest profile</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Add a guest profile</h1>
         <p className="mt-2 text-[15px] leading-6 text-slate-500">
           Store guest details so you can attach them to bookings and track their stays.
         </p>

@@ -105,9 +105,9 @@ export function TimelineView({ properties, bookings }: TimelineViewProps) {
   return (
     <div className="flex h-full flex-col bg-white">
       {/* Toolbar */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-slate-100 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
+          <div className="flex min-w-0 items-center gap-2">
             <CalendarDays className="h-5 w-5 text-rose-500" />
             <h2 className="text-lg font-bold text-slate-900">{monthLabel}</h2>
           </div>
@@ -164,15 +164,9 @@ export function TimelineView({ properties, bookings }: TimelineViewProps) {
         </div>
       ) : (
         <div className="flex-1 overflow-auto scroll-smooth">
-          <div
-            className="min-w-max"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `240px repeat(${days.length}, minmax(52px, 1fr))`,
-            }}
-          >
+          <div className="grid min-w-max grid-cols-[120px_repeat(21,44px)] sm:grid-cols-[240px_repeat(21,52px)]">
             {/* Header: Property label cell */}
-            <div className="sticky left-0 top-0 z-30 col-span-1 border-b border-r border-slate-100 bg-white/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur">
+            <div className="sticky left-0 top-0 z-30 col-span-1 border-b border-r border-slate-100 bg-white/95 px-2 py-3 text-[10px] font-semibold uppercase tracking-wide text-slate-400 backdrop-blur sm:px-4 sm:text-xs">
               Property
             </div>
             {/* Header: day cells */}
@@ -211,9 +205,9 @@ export function TimelineView({ properties, bookings }: TimelineViewProps) {
               return (
                 <div key={property.id} className="contents group">
                   {/* Sidebar cell */}
-                  <div className="sticky left-0 z-20 col-span-1 flex flex-col justify-center border-b border-r border-slate-100 bg-white px-4 py-4 transition group-hover:bg-slate-50">
-                    <span className="truncate text-sm font-semibold text-slate-900">{property.name}</span>
-                    <span className="truncate text-xs text-slate-400">{property.city}</span>
+                  <div className="sticky left-0 z-20 col-span-1 flex min-w-0 flex-col justify-center border-b border-r border-slate-100 bg-white px-2 py-3 transition group-hover:bg-slate-50 sm:px-4 sm:py-4">
+                    <span className="line-clamp-2 text-xs font-semibold leading-4 text-slate-900 sm:truncate sm:text-sm">{property.name}</span>
+                    <span className="truncate text-[10px] text-slate-400 sm:text-xs">{property.city}</span>
                   </div>
 
                   {/* Day cells */}

@@ -25,7 +25,7 @@ export default async function OwnersPage() {
         {can(context.role, "owners:create") && (
           <Link
             href="/dashboard/owners/new"
-            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             <span>Add Owner</span>
@@ -44,11 +44,11 @@ export default async function OwnersPage() {
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
                 <Building className="h-5 w-5" />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg leading-tight">
+              <div className="min-w-0">
+                <h3 className="break-words text-lg font-bold leading-tight text-slate-900">
                   {owner.legal_name}
                 </h3>
-                <p className="text-sm text-slate-500 mt-1">{owner.email}</p>
+                <p className="mt-1 break-all text-sm text-slate-500">{owner.email}</p>
                 <div className="mt-3">
                   <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${owner.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                     {owner.is_active ? 'Active Partner' : 'Inactive'}

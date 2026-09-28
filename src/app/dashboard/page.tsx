@@ -104,13 +104,13 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 pb-12">
       {/* Top Banner & Welcome Section */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-white p-8 sm:p-10 shadow-sm border border-slate-200/60 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="relative z-10 flex flex-col gap-4">
+      <div className="relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm sm:rounded-[2rem] sm:p-8 md:flex-row md:items-center md:justify-between lg:p-10">
+        <div className="relative z-10 flex min-w-0 flex-col gap-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1 text-xs font-semibold text-rose-600">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Operations Command Center</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
             {greeting}, {context.user.fullName || "Operator"}.
           </h1>
           <p className="max-w-xl text-sm text-slate-500 leading-relaxed">
@@ -118,17 +118,17 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <div className="relative z-10 flex flex-wrap items-center gap-3">
+        <div className="relative z-10 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           {can(context.role, "properties:create") && (
             <Link
               href="/dashboard/properties/new"
-              className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 hover:scale-[1.02]"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 sm:w-auto sm:hover:scale-[1.02]"
             >
               <Plus className="h-4 w-4" />
               Add New Property
             </Link>
           )}
-          <ComingSoonButton className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700">
+          <ComingSoonButton className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 sm:w-auto">
             <RefreshCw className="h-4 w-4 text-slate-400" />
             <span>Sync Channels</span>
           </ComingSoonButton>
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* High-Impact Metric Cards Grid */}
-      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
         <div className="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm transition hover:shadow-md hover:border-rose-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Occupancy Rate</span>
@@ -144,8 +144,8 @@ export default async function DashboardPage() {
               <Building2 className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <p className="text-3xl font-extrabold text-slate-900">88.5%</p>
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-2xl font-extrabold text-slate-900 sm:text-3xl">88.5%</p>
             <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="h-3.5 w-3.5" /> +12.4%
             </span>
@@ -163,8 +163,8 @@ export default async function DashboardPage() {
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <p className="text-3xl font-extrabold text-slate-900">₹8,45,000</p>
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-2xl font-extrabold text-slate-900 sm:text-3xl">₹8,45,000</p>
             <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="h-3.5 w-3.5" /> +18.2%
             </span>
@@ -182,8 +182,8 @@ export default async function DashboardPage() {
               <Sparkles className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <p className="text-3xl font-extrabold text-slate-900">98.2%</p>
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-2xl font-extrabold text-slate-900 sm:text-3xl">98.2%</p>
             <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
               2 Turnovers Active
             </span>
@@ -202,8 +202,8 @@ export default async function DashboardPage() {
               <Star className="h-5 w-5 fill-amber-400" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <p className="text-3xl font-extrabold text-slate-900">4.94 ★</p>
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-2xl font-extrabold text-slate-900 sm:text-3xl">4.94 ★</p>
             <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
               Superhost status
             </span>

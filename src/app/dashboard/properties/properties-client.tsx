@@ -22,12 +22,13 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
           {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-slate-200 bg-white p-1">
+          <div className="col-span-2 flex min-h-11 items-center rounded-xl border border-slate-200 bg-white p-1 sm:col-span-1">
             <button
               onClick={() => setViewMode("table")}
-              className={`flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+              aria-label="Show properties as a table"
+              className={`flex min-h-9 flex-1 items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                 viewMode === "table"
                   ? "bg-slate-100 text-slate-900 shadow-sm"
                   : "text-slate-500 hover:text-slate-900"
@@ -38,7 +39,8 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+              aria-label="Show properties as cards"
+              className={`flex min-h-9 flex-1 items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                 viewMode === "grid"
                   ? "bg-slate-100 text-slate-900 shadow-sm"
                   : "text-slate-500 hover:text-slate-900"
@@ -57,7 +59,7 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
           {canCreate && (
             <Link
               href="/dashboard/properties/new"
-              className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+              className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 sm:col-span-1 sm:flex-none"
             >
               <Plus className="h-4 w-4" />
               <span>Add Property</span>

@@ -24,9 +24,9 @@ export default async function NewOwnerPage() {
       <Link href="/dashboard/owners" className="text-sm font-medium text-rose-600 hover:underline">
         ← Back to owners
       </Link>
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-8">
         <p className="text-sm font-medium text-rose-600">New owner</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Add a property owner</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Add a property owner</h1>
         <p className="mt-2 text-[15px] leading-6 text-slate-500">
           Register a homeowner client so you can assign their properties and track payouts.
         </p>

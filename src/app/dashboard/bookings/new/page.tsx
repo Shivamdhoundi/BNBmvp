@@ -40,9 +40,9 @@ export default async function NewBookingPage() {
       <Link href="/dashboard/bookings" className="text-sm font-medium text-rose-600 hover:underline">
         ← Back to bookings
       </Link>
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-8">
         <p className="text-sm font-medium text-rose-600">New booking</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Create a reservation</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Create a reservation</h1>
         <p className="mt-2 text-[15px] leading-6 text-slate-500">
           Assign a guest to a property for a set of dates. It will appear on the calendar and bookings list.
         </p>
