@@ -5,7 +5,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import type { OrganizationContext } from "@/server/auth/context";
 
-export function DashboardShell({ context, children }: { context: OrganizationContext; children: React.ReactNode }) {
+export function DashboardShell({ context, canManageTeam = false, children }: { context: OrganizationContext; canManageTeam?: boolean; children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function DashboardShell({ context, children }: { context: OrganizationCon
         <button type="button" aria-label="Close navigation" className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)} />
       )}
       <div id="mobile-navigation" className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,86vw)] transform bg-slate-900 shadow-2xl transition-transform duration-300 ease-out lg:w-64 lg:translate-x-0 lg:shadow-none ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar onNavigate={() => setIsSidebarOpen(false)} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar canManageTeam={canManageTeam} onNavigate={() => setIsSidebarOpen(false)} onClose={() => setIsSidebarOpen(false)} />
       </div>
       <div className="flex min-h-screen min-w-0 flex-col lg:pl-64">
         <Topbar context={context} isSidebarOpen={isSidebarOpen} onMenuClick={() => setIsSidebarOpen(true)} />

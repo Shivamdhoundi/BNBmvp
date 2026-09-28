@@ -43,6 +43,13 @@
       "when": 1790595264016,
       "tag": "0005_invitations_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790595868015,
+      "tag": "0006_team_membership_rpcs",
+      "breakpoints": true
     }
   ]
 }

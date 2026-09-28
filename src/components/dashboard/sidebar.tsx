@@ -14,6 +14,7 @@ import {
   ChevronDown,
   BarChart3,
   Database,
+  ShieldCheck,
   X
 } from "lucide-react";
 
@@ -35,7 +36,7 @@ function SoonBadge() {
   );
 }
 
-export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onClose?: () => void }) {
+export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavigate?: () => void; onClose?: () => void; canManageTeam?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -123,7 +124,21 @@ export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onCl
 
       </nav>
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto space-y-1 pt-4">
+        {canManageTeam && (
+          <Link
+            href="/dashboard/team"
+            onClick={onNavigate}
+            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium transition-colors ${
+              pathname === "/dashboard/team" || pathname.startsWith("/dashboard/team/")
+                ? "bg-slate-800 text-white"
+                : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+            }`}
+          >
+            <ShieldCheck className={`h-5 w-5 ${pathname.startsWith("/dashboard/team") ? "text-rose-500" : "text-slate-500 group-hover:text-slate-400"}`} />
+            <span>Team &amp; Security</span>
+          </Link>
+        )}
         <Link
           href="/dashboard/settings"
           onClick={onNavigate}
