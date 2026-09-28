@@ -12,7 +12,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "seed": "node scripts/seed-demo.mjs",
-    "seed:clear": "node scripts/clear-demo.mjs"
+    "seed:clear": "node scripts/clear-demo.mjs",
+    "test": "vitest run",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -41,6 +43,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "2.1.9"
   }
 }

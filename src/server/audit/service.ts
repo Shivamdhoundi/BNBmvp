@@ -1,7 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeAuditMetadata } from "@/server/audit/sanitize";
 import type { OrganizationContext } from "@/server/auth/context";
+
+export { sanitizeAuditMetadata } from "@/server/audit/sanitize";
 
 /**
  * Stable audit event taxonomy. Add new actions here to keep event names
@@ -20,41 +23,6 @@ export type AuditAction =
   | "booking.cancelled"
   | "settings.updated"
   | "data.exported";
-
-// Keys that must never be written to audit metadata.
-const FORBIDDEN_METADATA_KEYS = new Set([
-  "password",
-  "confirmation",
-  "token",
-  "token_hash",
-  "access_token",
-  "refresh_token",
-  "service_role_key",
-  "secret",
-  "card_number",
-  "cvv",
-  "totp_secret",
-]);
-
-/**
- * Removes sensitive keys and non-primitive noise from audit metadata.
- * Only string, number, boolean, and null values are retained.
- */
-export function sanitizeAuditMetadata(metadata: Record<string, unknown>): Record<string, unknown> {
-  const safe: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(metadata)) {
-    const lowerKey = key.toLowerCase();
-    if (FORBIDDEN_METADATA_KEYS.has(lowerKey)) continue;
-    if (Array.isArray(value)) {
-      safe[key] = value.filter((item) => ["string", "number", "boolean"].includes(typeof item));
-      continue;
-    }
-    if (value === null || ["string", "number", "boolean"].includes(typeof value)) {
-      safe[key] = value;
-    }
-  }
-  return safe;
-}
 
 /**
  * Records an audit event through the tenant-checked, actor-bound RPC.
