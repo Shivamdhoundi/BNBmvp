@@ -37,15 +37,24 @@ export type ResetState = {
 };
 
 export function getCanonicalAppOrigin(
-  environment: { NEXT_PUBLIC_APP_URL?: string; NODE_ENV?: string } = process.env,
+  environment: {
+    NEXT_PUBLIC_APP_URL?: string;
+    VERCEL_PROJECT_PRODUCTION_URL?: string;
+    VERCEL_URL?: string;
+    NODE_ENV?: string;
+  } = process.env,
 ) {
   const configured = environment.NEXT_PUBLIC_APP_URL?.trim();
-  if (!configured) {
+  const vercelHost = environment.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    environment.VERCEL_URL?.trim();
+  const candidate = configured || (vercelHost ? `https://${vercelHost}` : undefined);
+
+  if (!candidate) {
     if (environment.NODE_ENV !== "production") return "http://localhost:3000";
     throw new Error("Canonical application URL is not configured.");
   }
 
-  const parsed = z.url().safeParse(configured);
+  const parsed = z.url().safeParse(candidate);
   if (!parsed.success) throw new Error("Canonical application URL is invalid.");
 
   const url = new URL(parsed.data);

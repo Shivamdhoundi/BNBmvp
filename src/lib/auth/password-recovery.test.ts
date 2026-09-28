@@ -50,6 +50,13 @@ describe("canonical app origin", () => {
     expect(getCanonicalAppOrigin({ NEXT_PUBLIC_APP_URL: "https://app.example.com", NODE_ENV: "production" })).toBe("https://app.example.com");
   });
 
+  it("accepts Vercel's system production URL when NEXT_PUBLIC_APP_URL is unset", () => {
+    expect(getCanonicalAppOrigin({
+      VERCEL_PROJECT_PRODUCTION_URL: "staypilot-alpha.vercel.app",
+      NODE_ENV: "production",
+    })).toBe("https://staypilot-alpha.vercel.app");
+  });
+
   it("rejects non-https production origins", () => {
     expect(() => getCanonicalAppOrigin({ NEXT_PUBLIC_APP_URL: "http://app.example.com", NODE_ENV: "production" })).toThrow();
   });
