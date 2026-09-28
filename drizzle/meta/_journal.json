@@ -36,6 +36,13 @@
       "when": 1790556309503,
       "tag": "0004_security_lockdown",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790595264016,
+      "tag": "0005_invitations_foundation",
+      "breakpoints": true
     }
   ]
 }

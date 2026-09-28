@@ -279,3 +279,41 @@ export const propertySettings = pgTable(
     index("property_settings_org_idx").on(table.organizationId),
   ]
 );
+
+export const invitationStatus = pgEnum("invitation_status", [
+  "pending",
+  "accepted",
+  "revoked",
+  "expired",
+  "failed",
+]);
+
+export const organizationInvitations = pgTable(
+  "organization_invitations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: appRole("role").notNull(),
+    status: invitationStatus("status").default("pending").notNull(),
+    invitedBy: uuid("invited_by").references(() => users.id, { onDelete: "set null" }),
+    invitedUserId: uuid("invited_user_id").references(() => users.id, { onDelete: "set null" }),
+    correlationId: uuid("correlation_id").defaultRandom().notNull(),
+    failureCode: text("failure_code"),
+    sendCount: integer("send_count").default(0).notNull(),
+    lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    index("organization_invitations_org_email_idx").on(table.organizationId, table.email),
+    index("organization_invitations_org_status_idx").on(table.organizationId, table.status),
+    uniqueIndex("organization_invitations_one_pending")
+      .on(table.organizationId, table.email)
+      .where(sql`status = 'pending'`),
+    check("organization_invitations_expiry_valid", sql`expires_at > created_at`),
+  ],
+);
