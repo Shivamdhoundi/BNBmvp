@@ -92,6 +92,20 @@ Every tenant-owned record contains `organization_id`. The first migration enable
 
 The original self-service organization creation RPC is revoked by the security-lockdown migration. The application uses Supabase’s authenticated client for all runtime data access, so RLS remains effective. The direct `DATABASE_URL` is reserved for migrations and local administrative scripts; it must remain server-only.
 
+### Password recovery, invitations, and MFA
+
+- Password recovery: `/forgot-password` → Supabase recovery email → `/auth/recovery` → `/auth/reset-password`. Responses never reveal whether an email exists.
+- Invitations: admins invite users from **Team & Security** (`/dashboard/team`). Supabase Auth Admin operations run only in server-only modules using `SUPABASE_SERVICE_ROLE_KEY`.
+- MFA: TOTP is required for `super_admin`/`admin`. Set `MFA_ENFORCEMENT_DATE` (ISO 8601) to grant a grace period before enrollment becomes mandatory; leave unset to require it immediately.
+
+### Monitoring
+
+- **Supabase → Authentication → Audit Logs / Reports**: authoritative record of sign-in, sign-out, recovery, and MFA events.
+- **Supabase → Logs**: Auth, PostgREST, and database errors.
+- **Vercel → Logs**: route and Server Action failures, latency.
+- **`GET /api/health`**: protected uptime probe. Send `Authorization: Bearer <HEALTHCHECK_SECRET>`. Returns `200 {"status":"ok"}` when healthy, `401` when unauthenticated, `503` when connectivity fails. It never exposes credentials, URLs, schema, or tenant data. Point an external uptime monitor at it.
+- Recommended alerts: repeated failed logins, privileged membership changes, MFA removal, large exports, and elevated 5xx/latency.
+
 ## Project structure
 
 ```text
