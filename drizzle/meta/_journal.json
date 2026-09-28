@@ -50,6 +50,13 @@
       "when": 1790595868015,
       "tag": "0006_team_membership_rpcs",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790596396105,
+      "tag": "0007_audit_hardening",
+      "breakpoints": true
     }
   ]
 }

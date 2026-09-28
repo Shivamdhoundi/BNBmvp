@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { OrganizationContext } from "@/server/auth/context";
+import { recordAuditEvent } from "@/server/audit/service";
 
 export async function listBookings(organizationId: string) {
   const supabase = await createClient();
@@ -63,5 +64,13 @@ export async function createBooking(context: OrganizationContext, input: {
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "Unable to create booking.");
+
+  await recordAuditEvent(context, {
+    action: "booking.created",
+    entityType: "booking",
+    entityId: data.id,
+    metadata: { status: input.status || "pending", booking_source: input.bookingSource || "direct" },
+  });
+
   return data.id;
 }

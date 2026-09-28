@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { OrganizationContext } from "@/server/auth/context";
+import { recordAuditEvent } from "@/server/audit/service";
 
 export async function listGuests(organizationId: string) {
   const supabase = await createClient();
@@ -30,5 +31,13 @@ export async function createGuest(context: OrganizationContext, input: { firstNa
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "Unable to create guest.");
+
+  await recordAuditEvent(context, {
+    action: "guest.created",
+    entityType: "guest",
+    entityId: data.id,
+    metadata: { identity_verified: input.identityVerified || false },
+  });
+
   return data.id;
 }

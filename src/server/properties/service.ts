@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { OrganizationContext } from "@/server/auth/context";
+import { recordAuditEvent } from "@/server/audit/service";
 import type { CreatePropertyInput, UpdatePropertyInput } from "@/server/properties/validation";
 
 export async function listProperties(organizationId: string) {
@@ -115,13 +116,11 @@ export async function createProperty(context: OrganizationContext, input: Create
       max_guests: input.maxGuests,
     });
 
-    // Record Audit Log
-    await supabase.from("audit_logs").insert({
-      organization_id: context.organization.id,
-      actor_user_id: context.user.id,
+    // Record Audit Log through the tenant-checked, actor-bound RPC.
+    await recordAuditEvent(context, {
       action: "property.created",
-      entity_type: "property",
-      entity_id: insertedProperty.id,
+      entityType: "property",
+      entityId: insertedProperty.id,
       metadata: { name: input.name, property_type: input.propertyType },
     });
 
@@ -206,13 +205,10 @@ export async function updateProperty(context: OrganizationContext, input: Update
       .eq("property_id", id);
   }
 
-  // Audit Log
-  await supabase.from("audit_logs").insert({
-    organization_id: context.organization.id,
-    actor_user_id: context.user.id,
+  await recordAuditEvent(context, {
     action: "property.updated",
-    entity_type: "property",
-    entity_id: id,
+    entityType: "property",
+    entityId: id,
     metadata: { updated_fields: Object.keys(patch) },
   });
 }
@@ -228,13 +224,10 @@ export async function deleteProperty(context: OrganizationContext, propertyId: s
 
   if (error) throw new Error("Unable to delete property: " + error.message);
 
-  // Audit Log
-  await supabase.from("audit_logs").insert({
-    organization_id: context.organization.id,
-    actor_user_id: context.user.id,
+  await recordAuditEvent(context, {
     action: "property.deleted",
-    entity_type: "property",
-    entity_id: propertyId,
+    entityType: "property",
+    entityId: propertyId,
     metadata: {},
   });
 }

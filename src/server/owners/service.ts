@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { OrganizationContext } from "@/server/auth/context";
+import { recordAuditEvent } from "@/server/audit/service";
 
 export async function listOwners(organizationId: string) {
   const supabase = await createClient();
@@ -29,5 +30,13 @@ export async function createOwner(context: OrganizationContext, input: { legalNa
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "Unable to create owner.");
+
+  await recordAuditEvent(context, {
+    action: "owner.created",
+    entityType: "owner",
+    entityId: data.id,
+    metadata: { is_active: input.isActive ?? true },
+  });
+
   return data.id;
 }
