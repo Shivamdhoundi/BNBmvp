@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { signIn } from "@/app/actions/auth";
@@ -37,18 +38,27 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-900">
-          Password
-          <input 
-            name="password" 
-            type="password" 
-            required 
-            minLength={8} 
-            autoComplete="current-password" 
-            className="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-50" 
-            placeholder="••••••••" 
-          />
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label className="block text-sm font-semibold text-slate-900">
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm font-semibold text-rose-600 transition hover:text-rose-700 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        <input 
+          name="password" 
+          type="password" 
+          required 
+          minLength={8} 
+          autoComplete="current-password" 
+          aria-label="Password"
+          className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-50" 
+          placeholder="••••••••" 
+        />
 
         {error ? <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">{error}</p> : null}
         
