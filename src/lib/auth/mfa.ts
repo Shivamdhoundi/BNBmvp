@@ -26,13 +26,17 @@ export function roleRequiresMfa(role: AppRole): boolean {
 
 /**
  * Whether MFA enrollment is mandatory right now for the given role.
- * With no enforcement date configured, MFA is required immediately for
- * privileged roles.
+ *
+ * Enforcement requires an explicitly configured MFA_ENFORCEMENT_DATE. Until an
+ * administrator sets that date (and enrolls a recovery-capable factor), the app
+ * prompts enrollment but does not hard-block privileged access, preventing an
+ * accidental single-admin lockout on first deploy. Once a factor is verified,
+ * the AAL2 verify gate always applies regardless of this date.
  */
 export function isMfaMandatory(role: AppRole, now = new Date()): boolean {
   if (!roleRequiresMfa(role)) return false;
   const enforcementDate = getMfaEnforcementDate();
-  if (!enforcementDate) return true;
+  if (!enforcementDate) return false;
   return now >= enforcementDate;
 }
 

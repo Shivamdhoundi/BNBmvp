@@ -11,10 +11,22 @@ describe("MFA policy", () => {
     expect(roleRequiresMfa("vendor")).toBe(false);
   });
 
-  it("is mandatory immediately when no enforcement date is set", () => {
-    // No MFA_ENFORCEMENT_DATE in the test env → mandatory now for admins.
-    expect(isMfaMandatory("admin")).toBe(true);
+  it("is not hard-mandatory when no enforcement date is set (lockout prevention)", () => {
+    // No MFA_ENFORCEMENT_DATE → prompt-only, not a hard block, for admins.
+    expect(isMfaMandatory("admin")).toBe(false);
     expect(isMfaMandatory("operations")).toBe(false);
+  });
+
+  it("becomes mandatory once a past enforcement date is configured", () => {
+    const original = process.env.MFA_ENFORCEMENT_DATE;
+    process.env.MFA_ENFORCEMENT_DATE = "2020-01-01T00:00:00Z";
+    try {
+      expect(isMfaMandatory("admin")).toBe(true);
+      expect(isMfaMandatory("operations")).toBe(false);
+    } finally {
+      if (original === undefined) delete process.env.MFA_ENFORCEMENT_DATE;
+      else process.env.MFA_ENFORCEMENT_DATE = original;
+    }
   });
 
   it("allows non-privileged roles through the gate", () => {
@@ -29,7 +41,20 @@ describe("MFA policy", () => {
     expect(evaluateMfaGate({ role: "admin", hasVerifiedFactor: true, currentLevel: "aal2" })).toEqual({ kind: "allow" });
   });
 
-  it("requires enrollment when a privileged user has no factor and MFA is mandatory", () => {
-    expect(evaluateMfaGate({ role: "super_admin", hasVerifiedFactor: false, currentLevel: "aal1" })).toEqual({ kind: "enroll" });
+  it("allows a privileged user without a factor when enforcement is not yet mandatory", () => {
+    // No enforcement date configured → not hard-blocked (lockout prevention).
+    expect(evaluateMfaGate({ role: "super_admin", hasVerifiedFactor: false, currentLevel: "aal1" })).toEqual({ kind: "allow" });
+  });
+
+  it("requires enrollment when a privileged user has no factor and enforcement is active", () => {
+    const past = new Date("2020-01-01T00:00:00Z");
+    const original = process.env.MFA_ENFORCEMENT_DATE;
+    process.env.MFA_ENFORCEMENT_DATE = past.toISOString();
+    try {
+      expect(evaluateMfaGate({ role: "super_admin", hasVerifiedFactor: false, currentLevel: "aal1", now: new Date() })).toEqual({ kind: "enroll" });
+    } finally {
+      if (original === undefined) delete process.env.MFA_ENFORCEMENT_DATE;
+      else process.env.MFA_ENFORCEMENT_DATE = original;
+    }
   });
 });
