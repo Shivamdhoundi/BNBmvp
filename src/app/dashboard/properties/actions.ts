@@ -161,6 +161,7 @@ export async function deletePropertyAction(formData: FormData) {
 
 export async function addAmenityAction(formData: FormData) {
   const context = await requireOrganizationContext();
+  if (!can(context.role, "properties:update")) throw new Error("Permission denied.");
   const propertyId = String(formData.get("propertyId"));
   const amenityKey = String(formData.get("amenityKey"));
   const details = String(formData.get("details") || "");
@@ -171,6 +172,7 @@ export async function addAmenityAction(formData: FormData) {
 
 export async function removeAmenityAction(formData: FormData) {
   const context = await requireOrganizationContext();
+  if (!can(context.role, "properties:update")) throw new Error("Permission denied.");
   const amenityId = String(formData.get("amenityId"));
   const propertyId = String(formData.get("propertyId"));
 

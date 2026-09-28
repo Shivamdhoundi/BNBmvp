@@ -29,6 +29,13 @@
       "when": 1790445614075,
       "tag": "0003_omniscient_nemesis",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790556309503,
+      "tag": "0004_security_lockdown",
+      "breakpoints": true
     }
   ]
 }

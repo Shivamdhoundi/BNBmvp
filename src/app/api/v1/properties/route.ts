@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     if (!parsed.success) return NextResponse.json({ error: "Invalid property input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
     const propertyId = await createProperty(context, parsed.data);
     return NextResponse.json({ data: { id: propertyId } }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to create property" }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Unable to create property" }, { status: 500 });
   }
 }

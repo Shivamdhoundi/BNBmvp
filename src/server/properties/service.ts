@@ -43,6 +43,16 @@ export async function getProperty(organizationId: string, propertyId: string) {
 export async function createProperty(context: OrganizationContext, input: CreatePropertyInput) {
   const supabase = await createClient();
 
+  if (input.ownerId) {
+    const { data: owner } = await supabase
+      .from("owners")
+      .select("id")
+      .eq("id", input.ownerId)
+      .eq("organization_id", context.organization.id)
+      .maybeSingle();
+    if (!owner) throw new Error("Select an owner from this workspace.");
+  }
+
   // Try RPC first for transactional property + unit creation
   const { data: rpcData, error: rpcError } = await supabase.rpc("create_property_with_unit", {
     input_organization_id: context.organization.id,
@@ -141,6 +151,16 @@ export async function createProperty(context: OrganizationContext, input: Create
 export async function updateProperty(context: OrganizationContext, input: UpdatePropertyInput) {
   const supabase = await createClient();
   const { id, ...updates } = input;
+
+  if (updates.ownerId) {
+    const { data: owner } = await supabase
+      .from("owners")
+      .select("id")
+      .eq("id", updates.ownerId)
+      .eq("organization_id", context.organization.id)
+      .maybeSingle();
+    if (!owner) throw new Error("Select an owner from this workspace.");
+  }
 
   const patch: Record<string, unknown> = {};
   if (updates.name !== undefined) patch.name = updates.name;

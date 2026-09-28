@@ -76,12 +76,21 @@ npm run db:migrate   # apply migrations from drizzle/
 
 ## Security model
 
-Every tenant-owned record contains `organization_id`. The first migration enables RLS on all Phase 1 tables and provides narrowly scoped RPC functions for the two bootstrap writes:
+StayPilot is configured as an internal, invite-only application:
 
-- `create_organization_with_owner` creates a workspace and its first active `super_admin` membership.
+- The sign-in form authenticates existing Supabase users only; failed sign-ins never create accounts.
+- `/sign-up` and self-service workspace creation are disabled.
+- Users without an active organization membership cannot enter the dashboard.
+- Workspace selection is verified server-side before the active-workspace cookie is written.
+- PostgreSQL Row Level Security enforces organization and role boundaries even for direct API calls.
+
+Create or invite approved users in Supabase Authentication, then add an active `organization_members` record with the appropriate role. For production, keep **Allow new users to sign up** disabled in Supabase Authentication settings and configure Supabase Auth rate limits/CAPTCHA as appropriate.
+
+Every tenant-owned record contains `organization_id`. The first migration enables RLS on all Phase 1 tables and provides a narrowly scoped RPC for property creation:
+
 - `create_property_with_unit` confirms an admin role, creates the property and its first rentable unit in one transaction, then writes an audit log.
 
-The application uses Supabase’s authenticated client for all runtime data access, so RLS remains effective. The direct `DATABASE_URL` is reserved for migrations and must remain server-only.
+The original self-service organization creation RPC is revoked by the security-lockdown migration. The application uses Supabase’s authenticated client for all runtime data access, so RLS remains effective. The direct `DATABASE_URL` is reserved for migrations and local administrative scripts; it must remain server-only.
 
 ## Project structure
 

@@ -28,6 +28,23 @@ export async function createBooking(context: OrganizationContext, input: {
   bookingSource?: string;
 }) {
   const supabase = await createClient();
+
+  const [{ data: property }, { data: guest }] = await Promise.all([
+    supabase
+      .from("properties")
+      .select("id")
+      .eq("id", input.propertyId)
+      .eq("organization_id", context.organization.id)
+      .maybeSingle(),
+    supabase
+      .from("guests")
+      .select("id")
+      .eq("id", input.guestId)
+      .eq("organization_id", context.organization.id)
+      .maybeSingle(),
+  ]);
+
+  if (!property || !guest) throw new Error("Select a property and guest from this workspace.");
   
   const { data, error } = await supabase
     .from("bookings")
