@@ -3,7 +3,6 @@ import { Plus, Calendar, Clock, MapPin } from "lucide-react";
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listBookings } from "@/server/bookings/service";
-import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 
 type BookingItem = {
   id: string;
@@ -67,6 +66,7 @@ export default async function BookingsPage() {
               <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold shadow-sm ${
                 booking.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                 booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                booking.status === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                 'bg-slate-50 text-slate-700 border-slate-200'
               }`}>
                 {label(booking.status)}
@@ -106,9 +106,9 @@ export default async function BookingsPage() {
               <span className="font-bold text-lg text-slate-900">
                 ₹{booking.total_price}
               </span>
-              <ComingSoonButton className="font-bold text-slate-900">
+              <Link href={`/dashboard/bookings/${booking.id}/edit`} className="font-bold text-slate-900 hover:text-rose-600">
                 Details →
-              </ComingSoonButton>
+              </Link>
             </div>
           </div>
         ))}

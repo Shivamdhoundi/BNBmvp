@@ -3,7 +3,7 @@ import { Plus, Building } from "lucide-react";
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listOwners } from "@/server/owners/service";
-import { ComingSoonButton } from "@/components/ui/coming-soon-button";
+import { archiveOwnerAction } from "@/app/dashboard/owners/actions";
 
 export default async function OwnersPage() {
   const context = await requireOrganizationContext();
@@ -57,11 +57,22 @@ export default async function OwnersPage() {
               </div>
             </div>
             
-            <div className="mt-6 flex items-center gap-4 text-sm border-t border-slate-100 pt-4">
-              <ComingSoonButton className="font-bold text-slate-900">
-                View Portfolio →
-              </ComingSoonButton>
-            </div>
+            {can(context.role, "owners:update") && (
+              <div className="mt-6 flex items-center gap-2 text-sm border-t border-slate-100 pt-4">
+                <Link
+                  href={`/dashboard/owners/${owner.id}/edit`}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Edit
+                </Link>
+                <form action={archiveOwnerAction}>
+                  <input type="hidden" name="ownerId" value={owner.id} />
+                  <button className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                    Archive
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         ))}
         {dbOwners.length === 0 && (

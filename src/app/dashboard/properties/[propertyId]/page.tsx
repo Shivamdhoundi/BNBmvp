@@ -16,7 +16,7 @@ import { getProperty } from "@/server/properties/service";
 import { listOwners } from "@/server/owners/service";
 import {
   updatePropertyDirectAction,
-  deletePropertyAction,
+  archivePropertyAction,
   addAmenityAction,
   removeAmenityAction,
 } from "@/app/dashboard/properties/actions";
@@ -99,7 +99,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
             </span>
 
             {canManage && (
-              <form action={deletePropertyAction}>
+              <form action={archivePropertyAction}>
                 <input type="hidden" name="propertyId" value={property.id} />
                 <button
                   type="submit"

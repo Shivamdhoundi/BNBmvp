@@ -3,15 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { z } from "zod";
+
 import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
-import { createBooking } from "@/server/bookings/service";
-import { createBookingSchema } from "@/server/bookings/validation";
+import { cancelBooking, createBooking, updateBooking } from "@/server/bookings/service";
+import { createBookingSchema, updateBookingSchema } from "@/server/bookings/validation";
 
 export type BookingFormState = {
   formError?: string;
   fieldErrors?: Record<string, string[] | undefined>;
 };
+
+const uuid = z.string().uuid();
 
 export async function createBookingAction(_: BookingFormState, formData: FormData): Promise<BookingFormState> {
   const context = await requireOrganizationContext();
@@ -50,4 +54,60 @@ export async function createBookingAction(_: BookingFormState, formData: FormDat
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard/calendar");
   redirect("/dashboard/bookings");
+}
+
+export async function updateBookingAction(_: BookingFormState, formData: FormData): Promise<BookingFormState> {
+  const context = await requireOrganizationContext();
+  if (!can(context.role, "bookings:update")) {
+    return { formError: "You do not have permission to update bookings." };
+  }
+
+  const parsed = updateBookingSchema.safeParse({
+    id: formData.get("id"),
+    propertyId: formData.get("propertyId"),
+    guestId: formData.get("guestId"),
+    checkInDate: formData.get("checkInDate"),
+    checkOutDate: formData.get("checkOutDate"),
+    status: formData.get("status") || "pending",
+    totalGuests: formData.get("totalGuests") || 1,
+    totalPrice: formData.get("totalPrice") || 0,
+    bookingSource: formData.get("bookingSource") || "direct",
+  });
+
+  if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
+
+  try {
+    await updateBooking(context, parsed.data.id, {
+      propertyId: parsed.data.propertyId,
+      guestId: parsed.data.guestId,
+      checkInDate: parsed.data.checkInDate,
+      checkOutDate: parsed.data.checkOutDate,
+      status: parsed.data.status,
+      totalGuests: parsed.data.totalGuests,
+      totalPrice: parsed.data.totalPrice,
+      bookingSource: parsed.data.bookingSource,
+    });
+  } catch (error) {
+    return { formError: error instanceof Error ? error.message : "Unable to update booking." };
+  }
+
+  revalidatePath("/dashboard/bookings");
+  revalidatePath("/dashboard/calendar");
+  redirect("/dashboard/bookings");
+}
+
+export async function cancelBookingAction(formData: FormData): Promise<void> {
+  const context = await requireOrganizationContext();
+  if (!can(context.role, "bookings:update")) return;
+
+  const bookingId = uuid.safeParse(formData.get("bookingId"));
+  if (!bookingId.success) return;
+
+  try {
+    await cancelBooking(context, bookingId.data);
+  } catch {
+    // No-op on failure.
+  }
+  revalidatePath("/dashboard/bookings");
+  revalidatePath("/dashboard/calendar");
 }

@@ -238,7 +238,7 @@ export function TimelineView({ properties, bookings }: TimelineViewProps) {
 
                     return (
                       <Link
-                        href={`/dashboard/bookings`}
+                        href={`/dashboard/bookings/${booking.id}/edit`}
                         key={booking.id}
                         className={`z-10 my-2 flex items-center gap-2 self-center overflow-hidden rounded-full px-2.5 py-1.5 text-xs font-semibold shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-md ${bookingClasses(
                           booking.status

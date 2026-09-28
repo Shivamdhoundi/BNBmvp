@@ -8,7 +8,7 @@ import { requireOrganizationContext } from "@/server/auth/context";
 import {
   createProperty,
   updateProperty,
-  deleteProperty,
+  archiveProperty,
   addPropertyAmenity,
   removePropertyAmenity,
 } from "@/server/properties/service";
@@ -147,12 +147,12 @@ export async function updatePropertyDirectAction(formData: FormData) {
 }
 
 
-export async function deletePropertyAction(formData: FormData) {
+export async function archivePropertyAction(formData: FormData) {
   const context = await requireOrganizationContext();
   if (!can(context.role, "properties:update")) throw new Error("Permission denied.");
 
   const propertyId = String(formData.get("propertyId"));
-  await deleteProperty(context, propertyId);
+  await archiveProperty(context, propertyId);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/properties");

@@ -14,6 +14,7 @@ export async function listProperties(organizationId: string) {
       owners (id, legal_name, email, phone)
     `)
     .eq("organization_id", organizationId)
+    .is("archived_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error("Unable to load properties: " + error.message);
@@ -213,22 +214,25 @@ export async function updateProperty(context: OrganizationContext, input: Update
   });
 }
 
-export async function deleteProperty(context: OrganizationContext, propertyId: string) {
+export async function archiveProperty(context: OrganizationContext, propertyId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  // Soft archive: preserve the record and its history instead of deleting.
+  const { error, count } = await supabase
     .from("properties")
-    .delete()
+    .update({ archived_at: new Date().toISOString(), status: "inactive" }, { count: "exact" })
     .eq("organization_id", context.organization.id)
-    .eq("id", propertyId);
+    .eq("id", propertyId)
+    .is("archived_at", null);
 
-  if (error) throw new Error("Unable to delete property: " + error.message);
+  if (error) throw new Error("Unable to archive property: " + error.message);
+  if (!count) throw new Error("Property not found or already archived.");
 
   await recordAuditEvent(context, {
-    action: "property.deleted",
+    action: "property.updated",
     entityType: "property",
     entityId: propertyId,
-    metadata: {},
+    metadata: { event: "archived" },
   });
 }
 
