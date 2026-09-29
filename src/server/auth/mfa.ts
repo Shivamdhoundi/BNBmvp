@@ -22,8 +22,12 @@ export type MfaSnapshot = {
 export async function getMfaSnapshot(): Promise<MfaSnapshot> {
   const supabase = await createClient();
 
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  const { data: factors } = await supabase.auth.mfa.listFactors();
+  // These two reads are independent, so run them concurrently to avoid a
+  // second sequential round-trip to Supabase.
+  const [{ data: aal }, { data: factors }] = await Promise.all([
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    supabase.auth.mfa.listFactors(),
+  ]);
 
   const verifiedTotp = (factors?.totp ?? []).some((factor) => factor.status === "verified");
 

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,15 +12,17 @@ export type OrganizationContext = {
   role: AppRole;
 };
 
-export async function getSignedInUser() {
+// Request-scoped so repeated calls (layout guard + page/action helpers) reuse a
+// single Supabase auth round-trip instead of re-fetching the user each time.
+export const getSignedInUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
-export async function getOrganizationContext(): Promise<OrganizationContext | null> {
+export const getOrganizationContext = cache(async (): Promise<OrganizationContext | null> => {
   const user = await getSignedInUser();
   if (!user) return null;
 
@@ -64,7 +68,7 @@ export async function getOrganizationContext(): Promise<OrganizationContext | nu
     organization: orgData as { id: string; name: string; slug: string },
     role: data.role as AppRole,
   };
-}
+});
 
 export async function requireOrganizationContext(): Promise<OrganizationContext> {
   const context = await getOrganizationContext();

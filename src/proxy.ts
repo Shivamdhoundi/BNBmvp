@@ -6,6 +6,19 @@ import { getPublicSupabaseEnv, isSupabaseConfigured } from "@/lib/env";
 export async function proxy(request: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.next({ request });
 
+  // The proxy only needs Supabase to (a) guard /dashboard/* and (b) redirect an
+  // already-signed-in user away from the auth pages. Every other path (public
+  // marketing/auth pages, and _next/data routes that always run the proxy) can
+  // skip the auth.getClaims() network call entirely. Auth remains enforced in
+  // the dashboard layout and inside every Server Action, so this only removes
+  // redundant round-trips, not authorization.
+  const { pathname: earlyPathname } = request.nextUrl;
+  const needsAuthCheck =
+    earlyPathname.startsWith("/dashboard") ||
+    earlyPathname === "/sign-in" ||
+    earlyPathname === "/sign-up";
+  if (!needsAuthCheck) return NextResponse.next({ request });
+
   const env = getPublicSupabaseEnv();
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
@@ -46,5 +59,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Only run the proxy on the paths it actually acts on. This keeps the
+  // Supabase auth round-trip off public/static routes. Security is still
+  // enforced server-side in the dashboard layout and Server Actions.
+  matcher: ["/dashboard/:path*", "/sign-in", "/sign-up"],
 };
