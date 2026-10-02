@@ -53,6 +53,7 @@ export async function createBookingAction(_: BookingFormState, formData: FormDat
 
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
   redirect("/dashboard/bookings");
 }
 
@@ -93,6 +94,7 @@ export async function updateBookingAction(_: BookingFormState, formData: FormDat
 
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
   redirect("/dashboard/bookings");
 }
 
@@ -110,4 +112,5 @@ export async function cancelBookingAction(formData: FormData): Promise<void> {
   }
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
 }

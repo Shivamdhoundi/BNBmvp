@@ -4,6 +4,7 @@ import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listGuests } from "@/server/guests/service";
 import { archiveGuestAction } from "@/app/dashboard/guests/actions";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 
 export default async function GuestsPage() {
   const context = await requireOrganizationContext();
@@ -67,9 +68,12 @@ export default async function GuestsPage() {
                 </Link>
                 <form action={archiveGuestAction}>
                   <input type="hidden" name="guestId" value={guest.id} />
-                  <button className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                  <ConfirmSubmitButton
+                    message="Archive this guest? They will be removed from active guest lists."
+                    className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                  >
                     Archive
-                  </button>
+                  </ConfirmSubmitButton>
                 </form>
               </div>
             )}

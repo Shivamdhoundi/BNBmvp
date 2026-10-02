@@ -28,7 +28,7 @@ export async function createGuestAction(_: GuestFormState, formData: FormData): 
     lastName: formData.get("lastName"),
     email: formData.get("email") || undefined,
     phone: formData.get("phone") || undefined,
-    identityVerified: formData.get("identityVerified") ?? false,
+    identityVerified: formData.get("identityVerified") === "true",
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -46,6 +46,7 @@ export async function createGuestAction(_: GuestFormState, formData: FormData): 
   }
 
   revalidatePath("/dashboard/guests");
+  revalidatePath("/dashboard");
   redirect("/dashboard/guests");
 }
 
@@ -63,7 +64,7 @@ export async function updateGuestAction(_: GuestFormState, formData: FormData): 
     lastName: formData.get("lastName"),
     email: formData.get("email") || undefined,
     phone: formData.get("phone") || undefined,
-    identityVerified: formData.get("identityVerified") ?? false,
+    identityVerified: formData.get("identityVerified") === "true",
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -81,6 +82,7 @@ export async function updateGuestAction(_: GuestFormState, formData: FormData): 
   }
 
   revalidatePath("/dashboard/guests");
+  revalidatePath("/dashboard");
   redirect("/dashboard/guests");
 }
 
@@ -97,4 +99,5 @@ export async function archiveGuestAction(formData: FormData): Promise<void> {
     // No-op on failure.
   }
   revalidatePath("/dashboard/guests");
+  revalidatePath("/dashboard");
 }

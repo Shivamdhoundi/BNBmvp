@@ -250,10 +250,12 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
-        <div className="hidden flex-1 text-sm text-slate-500 sm:block">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        {bulkActions.length > 0 ? (
+          <div className="hidden flex-1 text-sm text-slate-500 sm:block">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+        ) : <div className="hidden flex-1 sm:block" />}
         <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-6 lg:gap-8">
           <div className="flex items-center gap-2">
             <p className="text-xs font-medium text-slate-600 sm:text-sm">Rows</p>

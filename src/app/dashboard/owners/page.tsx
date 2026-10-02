@@ -4,6 +4,7 @@ import { can } from "@/lib/permissions";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { listOwners } from "@/server/owners/service";
 import { archiveOwnerAction } from "@/app/dashboard/owners/actions";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 
 export default async function OwnersPage() {
   const context = await requireOrganizationContext();
@@ -67,9 +68,12 @@ export default async function OwnersPage() {
                 </Link>
                 <form action={archiveOwnerAction}>
                   <input type="hidden" name="ownerId" value={owner.id} />
-                  <button className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                  <ConfirmSubmitButton
+                    message="Archive this owner? They will be removed from active owner lists."
+                    className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                  >
                     Archive
-                  </button>
+                  </ConfirmSubmitButton>
                 </form>
               </div>
             )}

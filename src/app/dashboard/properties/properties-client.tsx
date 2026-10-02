@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutGrid, List, Building2, Plus, Download } from "lucide-react";
+import { LayoutGrid, List, Building2, Plus } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { columns, type PropertyData } from "./columns";
 
@@ -51,11 +51,6 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
             </button>
           </div>
           
-          <button className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-
           {canCreate && (
             <Link
               href="/dashboard/properties/new"

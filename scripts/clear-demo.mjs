@@ -1,22 +1,16 @@
-import { config } from "dotenv";
 import postgres from "postgres";
+import { getDemoMutationConfig } from "./demo-config.mjs";
 
-config({ path: ".env.local" });
-
-const url = process.env.DATABASE_URL;
-if (!url) {
-  console.error("DATABASE_URL is not set in .env.local");
-  process.exit(1);
-}
-
-const sql = postgres(url, { prepare: false });
+const { databaseUrl, organizationId } = getDemoMutationConfig();
+const sql = postgres(databaseUrl, { prepare: false });
 
 async function main() {
   const orgRows = await sql`
     SELECT o.id AS org_id
     FROM organizations o
     JOIN organization_members m ON m.organization_id = o.id AND m.status = 'active'
-    ORDER BY o.created_at ASC
+    WHERE o.id = ${organizationId}
+    ORDER BY m.created_at ASC
     LIMIT 1
   `;
 

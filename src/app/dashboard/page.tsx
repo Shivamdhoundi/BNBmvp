@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Building2, Users, UserCheck, CalendarCheck, Plus, ChevronRight } from "lucide-react";
 
 import { can } from "@/lib/permissions";
-import { getOrganizationContext } from "@/server/auth/context";
+import { requireOrganizationContext } from "@/server/auth/context";
 import { listProperties } from "@/server/properties/service";
 import { listOwners } from "@/server/owners/service";
 import { listGuests } from "@/server/guests/service";
@@ -18,8 +18,7 @@ function getGreeting() {
 type BookingRow = { status: string; check_in_date: string; check_out_date: string };
 
 export default async function DashboardPage() {
-  const context = await getOrganizationContext();
-  if (!context) return null; // Let the layout handle the redirect
+  const context = await requireOrganizationContext();
 
   const [properties, owners, guests, bookings] = await Promise.all([
     listProperties(context.organization.id),

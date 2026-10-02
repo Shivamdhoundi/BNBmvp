@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 import type { OrganizationContext } from "@/server/auth/context";
 import { recordAuditEvent } from "@/server/audit/service";
 
@@ -18,6 +19,7 @@ export async function listGuests(organizationId: string, options: { includeArchi
 }
 
 export async function getGuest(organizationId: string, guestId: string) {
+  if (!isUuid(guestId)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("guests")
@@ -46,7 +48,7 @@ export async function createGuest(context: OrganizationContext, input: { firstNa
     .select("id")
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? "Unable to create guest.");
+  if (error || !data) throw new Error("Unable to create guest.");
 
   await recordAuditEvent(context, {
     action: "guest.created",
@@ -80,7 +82,7 @@ export async function updateGuest(
     .eq("organization_id", context.organization.id)
     .eq("id", guestId);
 
-  if (error) throw new Error("Unable to update guest: " + error.message);
+  if (error) throw new Error("Unable to update guest.");
   if (!count) throw new Error("Guest not found in this workspace.");
 
   await recordAuditEvent(context, {
@@ -101,7 +103,7 @@ export async function archiveGuest(context: OrganizationContext, guestId: string
     .eq("id", guestId)
     .is("archived_at", null);
 
-  if (error) throw new Error("Unable to archive guest: " + error.message);
+  if (error) throw new Error("Unable to archive guest.");
   if (!count) throw new Error("Guest not found or already archived.");
 
   await recordAuditEvent(context, {

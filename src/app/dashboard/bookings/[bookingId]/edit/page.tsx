@@ -36,7 +36,16 @@ export default async function EditBookingPage({ params }: { params: Promise<{ bo
   if (!booking) notFound();
 
   const propertyOptions = properties.map((p) => ({ id: p.id as string, label: `${p.name}${p.city ? ` — ${p.city}` : ""}` }));
+  if (!propertyOptions.some((option) => option.id === booking.property_id) && booking.properties) {
+    propertyOptions.unshift({ id: booking.property_id, label: `${booking.properties.name} — archived` });
+  }
   const guestOptions = guests.map((g) => ({ id: g.id as string, label: `${g.first_name} ${g.last_name}`.trim() }));
+  if (!guestOptions.some((option) => option.id === booking.guest_id) && booking.guests) {
+    guestOptions.unshift({
+      id: booking.guest_id,
+      label: `${booking.guests.first_name} ${booking.guests.last_name} — archived`.trim(),
+    });
+  }
 
   return (
     <div className="mx-auto max-w-2xl">

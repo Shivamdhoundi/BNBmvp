@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { can } from "@/lib/permissions";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import { requireOrganizationContext } from "@/server/auth/context";
 import { getProperty } from "@/server/properties/service";
 import { listOwners } from "@/server/owners/service";
@@ -101,13 +102,13 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
             {canManage && (
               <form action={archivePropertyAction}>
                 <input type="hidden" name="propertyId" value={property.id} />
-                <button
-                  type="submit"
+                <ConfirmSubmitButton
+                  message="Archive this property? It will be removed from active property lists."
                   className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
                 >
                   <Trash2 className="h-4 w-4" />
                   <span>Archive Property</span>
-                </button>
+                </ConfirmSubmitButton>
               </form>
             )}
           </div>
@@ -323,7 +324,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
                     defaultValue={((property.owners as any) && !Array.isArray(property.owners) ? (property.owners as any).id : (property.owners as any)?.[0]?.id) || ""}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 outline-none focus:border-teal-600"
                   >
-                    <option value="" disabled>Select an owner (Optional)</option>
+                    <option value="">No owner assigned</option>
                     {owners.map((owner) => (
                       <option key={owner.id} value={owner.id}>
                         {owner.legal_name}
@@ -376,4 +377,3 @@ export default async function PropertyDetailPage({ params }: PageProps<"/dashboa
     </div>
   );
 }
-

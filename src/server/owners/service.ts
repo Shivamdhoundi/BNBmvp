@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 import type { OrganizationContext } from "@/server/auth/context";
 import { recordAuditEvent } from "@/server/audit/service";
 
@@ -18,6 +19,7 @@ export async function listOwners(organizationId: string, options: { includeArchi
 }
 
 export async function getOwner(organizationId: string, ownerId: string) {
+  if (!isUuid(ownerId)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("owners")
@@ -45,7 +47,7 @@ export async function createOwner(context: OrganizationContext, input: { legalNa
     .select("id")
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? "Unable to create owner.");
+  if (error || !data) throw new Error("Unable to create owner.");
 
   await recordAuditEvent(context, {
     action: "owner.created",
@@ -78,7 +80,7 @@ export async function updateOwner(
     .eq("organization_id", context.organization.id)
     .eq("id", ownerId);
 
-  if (error) throw new Error("Unable to update owner: " + error.message);
+  if (error) throw new Error("Unable to update owner.");
   if (!count) throw new Error("Owner not found in this workspace.");
 
   await recordAuditEvent(context, {
@@ -99,7 +101,7 @@ export async function archiveOwner(context: OrganizationContext, ownerId: string
     .eq("id", ownerId)
     .is("archived_at", null);
 
-  if (error) throw new Error("Unable to archive owner: " + error.message);
+  if (error) throw new Error("Unable to archive owner.");
   if (!count) throw new Error("Owner not found or already archived.");
 
   await recordAuditEvent(context, {

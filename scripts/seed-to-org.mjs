@@ -1,12 +1,8 @@
-import { config } from "dotenv";
 import postgres from "postgres";
+import { getDemoMutationConfig } from "./demo-config.mjs";
 
-config({ path: ".env.local" });
-
-// Target YOUR real workspace (sdhoundiyal.41@gmail.com)
-const TARGET_ORG_ID = "7579a20b-b0d1-43fc-9c1f-6f5cf9af4655";
-
-const sql = postgres(process.env.DATABASE_URL, { prepare: false });
+const { databaseUrl, organizationId: TARGET_ORG_ID } = getDemoMutationConfig();
+const sql = postgres(databaseUrl, { prepare: false });
 
 function daysFromNow(n) {
   const d = new Date();
@@ -28,7 +24,7 @@ async function main() {
   }
   const orgId = TARGET_ORG_ID;
   const userId = membership.user_id;
-  console.log("Seeding YOUR organization:", orgId);
+  console.log("Seeding selected organization:", orgId);
 
   const owners = [
     { legal_name: "Rohan Malhotra", email: "rohan.malhotra@example.com", phone: "+91 98110 22334" },
@@ -97,7 +93,7 @@ async function main() {
     count++;
   }
   console.log(`Inserted ${count} bookings`);
-  console.log("\nDemo data added to YOUR workspace. Refresh the dashboard.");
+  console.log("\nDemo data added to the selected workspace. Refresh the dashboard.");
   await sql.end();
 }
 

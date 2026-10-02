@@ -65,6 +65,12 @@ export async function resendInvitationAction(formData: FormData): Promise<void> 
 
   if (role.data === "super_admin" && context.role !== "super_admin") return;
 
+  try {
+    await requireMfaForPrivilegedAction(context);
+  } catch {
+    return;
+  }
+
   await inviteMember(context, { email: email.data, role: role.data as AppRole });
   revalidatePath("/dashboard/team");
 }
@@ -77,6 +83,7 @@ export async function revokeInvitationAction(formData: FormData): Promise<void> 
   if (!invitationId.success) return;
 
   try {
+    await requireMfaForPrivilegedAction(context);
     await revokeInvitation(context, invitationId.data);
   } catch {
     // Surface nothing; the list reflects the current state on revalidation.

@@ -27,7 +27,7 @@ export async function createOwnerAction(_: OwnerFormState, formData: FormData): 
     legalName: formData.get("legalName"),
     email: formData.get("email"),
     phone: formData.get("phone") || undefined,
-    isActive: formData.get("isActive") ?? true,
+    isActive: formData.get("isActive") === "true",
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -44,6 +44,7 @@ export async function createOwnerAction(_: OwnerFormState, formData: FormData): 
   }
 
   revalidatePath("/dashboard/owners");
+  revalidatePath("/dashboard");
   redirect("/dashboard/owners");
 }
 
@@ -60,7 +61,7 @@ export async function updateOwnerAction(_: OwnerFormState, formData: FormData): 
     legalName: formData.get("legalName"),
     email: formData.get("email"),
     phone: formData.get("phone") || undefined,
-    isActive: formData.get("isActive") ?? true,
+    isActive: formData.get("isActive") === "true",
   });
 
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -77,6 +78,7 @@ export async function updateOwnerAction(_: OwnerFormState, formData: FormData): 
   }
 
   revalidatePath("/dashboard/owners");
+  revalidatePath("/dashboard");
   redirect("/dashboard/owners");
 }
 
@@ -93,4 +95,5 @@ export async function archiveOwnerAction(formData: FormData): Promise<void> {
     // No-op on failure; list reflects current state after revalidation.
   }
   revalidatePath("/dashboard/owners");
+  revalidatePath("/dashboard");
 }

@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/sign-in", request.nextUrl.origin));
   }
 
-  await supabase.rpc("accept_organization_invitation");
+  const { error } = await supabase.rpc("accept_organization_invitation");
+  if (error) {
+    return NextResponse.redirect(new URL("/select-profile?invite=invalid", request.nextUrl.origin));
+  }
 
   // Membership validation and workspace selection happen in the existing flow.
   return NextResponse.redirect(new URL("/select-profile", request.nextUrl.origin));

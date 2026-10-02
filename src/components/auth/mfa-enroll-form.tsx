@@ -2,20 +2,43 @@
 
 import { useActionState } from "react";
 
-import { confirmEnrollment, type VerifyState } from "@/app/mfa/actions";
+import {
+  beginEnrollment,
+  confirmEnrollment,
+  type EnrollState,
+  type VerifyState,
+} from "@/app/mfa/actions";
 
 const initialState: VerifyState = {};
+const initialEnrollState: EnrollState = {};
 
-export function MfaEnrollForm({
-  factorId,
-  qrCode,
-  secret,
-}: {
-  factorId: string;
-  qrCode: string;
-  secret: string;
-}) {
+export function MfaEnrollForm() {
+  const [enrollment, enrollAction, enrollPending] = useActionState(beginEnrollment, initialEnrollState);
   const [state, action, pending] = useActionState(confirmEnrollment, initialState);
+
+  if (!enrollment.factorId || !enrollment.qrCode || !enrollment.secret) {
+    return (
+      <form action={enrollAction} className="space-y-4">
+        <p className="text-sm leading-6 text-slate-600">
+          Generate a setup code when you are ready to scan it with your authenticator app.
+        </p>
+        {enrollment.error ? (
+          <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+            {enrollment.error}
+          </p>
+        ) : null}
+        <button
+          type="submit"
+          disabled={enrollPending}
+          className="w-full rounded-xl bg-slate-900 px-4 py-3.5 font-bold text-white shadow-md transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {enrollPending ? "Generating…" : "Generate setup code"}
+        </button>
+      </form>
+    );
+  }
+
+  const { factorId, qrCode, secret } = enrollment;
 
   return (
     <div className="space-y-5">

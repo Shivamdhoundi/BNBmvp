@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
 export const propertyTypes = ["apartment", "house", "villa", "studio", "serviced_apartment", "other"] as const;
 export const propertyStatuses = ["draft", "onboarding", "active", "paused", "inactive", "maintenance"] as const;
@@ -14,11 +15,11 @@ export const createPropertySchema = z.object({
   addressLine2: z.string().trim().max(240).optional(),
   city: z.string().trim().min(2).max(100).default("Gurugram"),
   state: z.string().trim().min(2).max(100).default("Haryana"),
-  postalCode: z.string().trim().optional().or(z.literal("")),
+  postalCode: z.string().trim().max(24).optional().or(z.literal("")),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
-  checkInTime: z.string().default("15:00"),
-  checkOutTime: z.string().default("11:00"),
+  checkInTime: z.string().regex(timePattern, "Use a valid check-in time.").default("15:00"),
+  checkOutTime: z.string().regex(timePattern, "Use a valid check-out time.").default("11:00"),
   basePrice: z.coerce.number().min(0, "Base price cannot be negative.").default(0),
   cleaningFee: z.coerce.number().min(0).default(0),
   securityDeposit: z.coerce.number().min(0).default(0),
@@ -38,4 +39,3 @@ export const updatePropertySchema = createPropertySchema.partial().extend({
 });
 
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;
-

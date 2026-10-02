@@ -1,21 +1,23 @@
 # StayPilot Operations
 
-Internal, multi-tenant short-term rental property-management platform. Phase 1 establishes secure organization workspaces, authentication, RBAC, and the properties foundation for a Gurgaon/Gurugram launch.
+Internal, multi-tenant short-term rental operations platform for a controlled Gurgaon/Gurugram launch.
 
-## Included in Phase 1
+## Included in the internal MVP
 
 - Next.js 16, TypeScript strict mode, Tailwind CSS 4
 - Supabase Auth with SSR-safe browser/server clients and session-refresh proxy
 - PostgreSQL schema and Drizzle migrations
 - Organization tenant isolation using PostgreSQL Row Level Security
 - Roles: `super_admin`, `admin`, `operations`, `owner`, `vendor`
-- First-workspace onboarding; the creator becomes `super_admin`
-- Property list, property detail, and validated property creation
+- Invite-only workspace selection and team administration
+- Property, owner, guest, booking, and calendar workflows
 - One rentable unit created atomically with each property; the schema supports multiple units later
-- Append-only audit records for organization and property creation
+- Booking overlap prevention at the database layer
+- Password recovery and gradual TOTP MFA enforcement
+- Append-only audit records for security and core operational mutations
 - Versioned `GET`/`POST /api/v1/properties` route
 
-Bookings, AI, channel integrations, cleaning, expenses, owner payouts, and messaging are intentionally not part of this phase.
+Cleaning, maintenance, expenses, reporting, import/export, owner payouts, channel integrations, AI, and messaging remain clearly marked as future work.
 
 ## Local setup
 
@@ -36,7 +38,9 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
    For older Supabase projects, the legacy anon key can be used as the publishable key.
 
-3. In **Project Settings → Database**, copy the URI connection string and set `DATABASE_URL`. It is used only by Drizzle migration commands; it is never exposed to the browser.
+3. In **Project Settings → Database**, copy the URI connection string and set `DATABASE_URL`. It is used only by Drizzle migration and administrative scripts; it is never exposed to the browser.
+
+   For invitations, also configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only secret. Set `NEXT_PUBLIC_APP_URL` to the canonical application origin and generate a high-entropy `HEALTHCHECK_SECRET`. Never expose the service-role or database credentials through a `NEXT_PUBLIC_` variable.
 
 4. Apply the schema and security migration:
 
@@ -48,12 +52,12 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
    ```text
    http://localhost:3000/auth/confirm
-   http://localhost:3000
+   http://localhost:3000/auth/recovery
    ```
 
-   Also add your deployed application URL and `/auth/confirm` URL when you deploy.
+   Add the equivalent HTTPS URLs for the production domain when you deploy.
 
-6. In **Authentication → Providers → Email**, enable Email. For local testing, disable confirmation temporarily or use the confirmation email workflow implemented at `/auth/confirm`.
+6. In **Authentication → Providers → Email**, enable Email and disable public user signup. Configure production SMTP before relying on invitations or password recovery. For local Supabase, the checked-in configuration already disables signup and enables TOTP.
 
 7. Start the app:
 
@@ -61,7 +65,7 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
    npm run dev
    ```
 
-   Open `http://localhost:3000`, create an account, confirm the email if required, create your organization, then add your first property.
+   Open `http://localhost:3000` and sign in with an approved account that already has an active organization membership. New teammates are added from **Team & Security**.
 
 ## Useful commands
 
@@ -73,6 +77,8 @@ npm run db:generate  # create a future Drizzle migration after a schema change
 npm run db:check     # validate migration history
 npm run db:migrate   # apply migrations from drizzle/
 ```
+
+The demo seed and clear commands are intentionally guarded. Before running either, set `DEMO_ORGANIZATION_ID` to the exact target workspace UUID and set `DEMO_DATA_CONFIRM=ALLOW_DEMO_DATA_MUTATION` for that single shell/session. Never add those confirmation values to production deployment variables.
 
 ## Security model
 
@@ -96,7 +102,7 @@ The original self-service organization creation RPC is revoked by the security-l
 
 - Password recovery: `/forgot-password` → Supabase recovery email → `/auth/recovery` → `/auth/reset-password`. Responses never reveal whether an email exists.
 - Invitations: admins invite users from **Team & Security** (`/dashboard/team`). Supabase Auth Admin operations run only in server-only modules using `SUPABASE_SERVICE_ROLE_KEY`.
-- MFA: TOTP is required for `super_admin`/`admin`. Set `MFA_ENFORCEMENT_DATE` (ISO 8601) to grant a grace period before enrollment becomes mandatory; leave unset to require it immediately.
+- MFA: TOTP is supported for `super_admin`/`admin`. Set `MFA_ENFORCEMENT_DATE` (ISO 8601) only after at least one administrator has verified enrollment. Before that date—or when unset—administrators without a factor are allowed through for a safe rollout. Once a user enrolls a factor, that user must verify at AAL2.
 
 ### Monitoring
 

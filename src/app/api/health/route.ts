@@ -32,13 +32,17 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    // Bounded, minimal connectivity probe. auth.getUser with no session returns
-    // quickly and touches the Supabase Auth service without exposing data.
-    const probe = supabase.auth.getUser();
+    // Bounded, minimal PostgREST/database probe. Anonymous RLS may return no
+    // rows, which is fine; an unavailable backend returns an error.
+    const probe = supabase
+      .from("organizations")
+      .select("id", { head: true, count: "exact" })
+      .limit(1);
     const timeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("timeout")), 3000),
     );
-    await Promise.race([probe, timeout]);
+    const result = await Promise.race([probe, timeout]);
+    if (result.error) throw new Error("connectivity probe failed");
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch {
     return NextResponse.json({ status: "unavailable" }, { status: 503 });

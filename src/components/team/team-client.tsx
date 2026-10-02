@@ -159,9 +159,9 @@ export function TeamClient({
                         ) : null}
                         {member.lastSignInAt ? (
                           <span className="text-[11px] text-slate-400">Last login {new Date(member.lastSignInAt).toLocaleDateString()}</span>
-                        ) : (
+                        ) : member.accountCreatedAt ? (
                           <span className="text-[11px] text-slate-400">Never signed in</span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>

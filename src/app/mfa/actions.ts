@@ -23,7 +23,8 @@ const codeSchema = z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code.")
  * Begins TOTP enrollment and returns the QR/secret for the authenticator app.
  * The secret is returned only during enrollment and never persisted by the app.
  */
-export async function beginEnrollment(): Promise<EnrollState> {
+export async function beginEnrollment(previousState: EnrollState): Promise<EnrollState> {
+  void previousState;
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) redirect("/sign-in");

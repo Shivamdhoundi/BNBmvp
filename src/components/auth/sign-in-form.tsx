@@ -13,9 +13,6 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     setIsLoading(true);
     setError(undefined);
     
-    // Remove hardcoded email
-    // formData.set("email", "admin@staypilot.com");
-
     const result = await signIn(formData, nextPath);
     if (result?.error) {
       setError(result.error);

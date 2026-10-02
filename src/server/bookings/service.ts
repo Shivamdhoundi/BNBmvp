@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 import type { OrganizationContext } from "@/server/auth/context";
 import { recordAuditEvent } from "@/server/audit/service";
 
@@ -36,12 +37,14 @@ export async function createBooking(context: OrganizationContext, input: {
       .select("id")
       .eq("id", input.propertyId)
       .eq("organization_id", context.organization.id)
+      .is("archived_at", null)
       .maybeSingle(),
     supabase
       .from("guests")
       .select("id")
       .eq("id", input.guestId)
       .eq("organization_id", context.organization.id)
+      .is("archived_at", null)
       .maybeSingle(),
   ]);
 
@@ -80,10 +83,11 @@ function mapBookingError(message?: string): string {
   if (message && /bookings_no_active_overlap/.test(message)) {
     return "Those dates overlap an existing booking for this property.";
   }
-  return message ?? "Unable to save booking.";
+  return "Unable to save booking. Please try again.";
 }
 
 export async function getBooking(organizationId: string, bookingId: string) {
+  if (!isUuid(bookingId)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
@@ -134,5 +138,5 @@ export async function cancelBooking(context: OrganizationContext, bookingId: str
     input_booking_id: bookingId,
   });
 
-  if (error) throw new Error(error.message ?? "Unable to cancel booking.");
+  if (error) throw new Error("Unable to cancel booking.");
 }

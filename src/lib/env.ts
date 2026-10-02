@@ -1,9 +1,8 @@
 import { z } from "zod";
 
 // These values are intentionally public and are included in the browser bundle.
-// Environment variables override them when configured by the deployment platform.
-const DEFAULT_SUPABASE_URL = "https://mmewrudedcifohamfetc.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_18R7H_Wv4eFaX0Rk6vuBpw_ViBCVp8K";
+// They must still be configured explicitly so an unconfigured deployment cannot
+// silently connect to the wrong Supabase project.
 
 const publicSupabaseSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
@@ -12,9 +11,8 @@ const publicSupabaseSchema = z.object({
 
 function resolvePublicSupabaseEnv() {
   return {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   };
 }
 

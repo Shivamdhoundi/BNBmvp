@@ -5,7 +5,8 @@ import { z } from "zod";
 // Server-only environment access. These values must never be imported by
 // Client Components or exposed in the browser bundle.
 
-const serviceRoleSchema = z.string().min(1);
+const serviceRoleSchema = z.string().trim().min(1);
+const healthcheckSecretSchema = z.string().trim().min(32);
 
 /**
  * Returns the Supabase service-role key for privileged Auth Admin operations.
@@ -29,7 +30,7 @@ export function isServiceRoleConfigured(): boolean {
  * requests. Throws a generic error when unavailable.
  */
 export function getHealthcheckSecret(): string {
-  const parsed = serviceRoleSchema.safeParse(process.env.HEALTHCHECK_SECRET);
+  const parsed = healthcheckSecretSchema.safeParse(process.env.HEALTHCHECK_SECRET);
   if (!parsed.success) {
     throw new Error("Health monitoring is not configured.");
   }
@@ -37,5 +38,5 @@ export function getHealthcheckSecret(): string {
 }
 
 export function isHealthcheckConfigured(): boolean {
-  return serviceRoleSchema.safeParse(process.env.HEALTHCHECK_SECRET).success;
+  return healthcheckSecretSchema.safeParse(process.env.HEALTHCHECK_SECRET).success;
 }

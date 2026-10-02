@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSignedInUser } from "@/server/auth/context";
 import { ProfileCard } from "./profile-card";
 
-export default async function SelectProfilePage() {
+export default async function SelectProfilePage({ searchParams }: PageProps<"/select-profile">) {
+  const { invite } = await searchParams;
   const user = await getSignedInUser();
   if (!user) redirect("/sign-in");
 
@@ -35,6 +36,12 @@ export default async function SelectProfilePage() {
           <h1 className="mt-8 text-2xl font-bold tracking-tight text-slate-900">Select your workspace</h1>
           <p className="mt-2 text-sm text-slate-500">Choose an approved workspace to continue.</p>
         </div>
+
+        {invite === "invalid" ? (
+          <p role="alert" className="mb-5 rounded-xl bg-amber-50 px-3 py-2.5 text-sm font-medium text-amber-800">
+            This invitation is invalid or expired. Ask an administrator to send a new invitation.
+          </p>
+        ) : null}
 
         {profiles.length > 0 ? (
           <div className="space-y-3">

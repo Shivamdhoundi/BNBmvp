@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 import type { OrganizationContext } from "@/server/auth/context";
 import { recordAuditEvent } from "@/server/audit/service";
 import type { CreatePropertyInput, UpdatePropertyInput } from "@/server/properties/validation";
@@ -22,6 +23,7 @@ export async function listProperties(organizationId: string) {
 }
 
 export async function getProperty(organizationId: string, propertyId: string) {
+  if (!isUuid(propertyId)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("properties")
@@ -55,7 +57,7 @@ export async function createProperty(context: OrganizationContext, input: Create
     if (!owner) throw new Error("Select an owner from this workspace.");
   }
 
-  // Try RPC first for transactional property + unit creation
+  // The RPC is the authoritative, transactional property + unit creation path.
   const { data: rpcData, error: rpcError } = await supabase.rpc("create_property_with_unit", {
     input_organization_id: context.organization.id,
     input_name: input.name,
@@ -72,78 +74,34 @@ export async function createProperty(context: OrganizationContext, input: Create
     input_max_guests: input.maxGuests,
   });
 
-  if (rpcError) {
-    // Fallback to direct insertion if RPC fails or parameter signature differs
-    const { data: insertedProperty, error: insertError } = await supabase
-      .from("properties")
-      .insert({
-        organization_id: context.organization.id,
-        name: input.name,
-        slug: input.slug,
-        property_type: input.propertyType,
-        status: input.status,
-        address_line_1: input.addressLine1,
-        address_line_2: input.addressLine2 || null,
-        city: input.city || "Gurugram",
-        state: input.state || "Haryana",
-        postal_code: input.postalCode || null,
-        latitude: input.latitude ? String(input.latitude) : null,
-        longitude: input.longitude ? String(input.longitude) : null,
-        check_in_time: input.checkInTime || "15:00",
-        check_out_time: input.checkOutTime || "11:00",
-        base_price: String(input.basePrice || 0),
-        cleaning_fee: String(input.cleaningFee || 0),
-        security_deposit: String(input.securityDeposit || 0),
-        description: input.description || null,
-        house_rules: input.houseRules || null,
-        owner_id: input.ownerId || null,
-        management_commission_percent: String(input.managementCommissionPercent || 20),
-        created_by: context.user.id,
-      })
-      .select("id")
-      .single();
-
-    if (insertError || !insertedProperty) {
-      throw new Error(insertError?.message ?? "Unable to create property.");
-    }
-
-    // Insert unit
-    await supabase.from("property_units").insert({
-      organization_id: context.organization.id,
-      property_id: insertedProperty.id,
-      name: "Main unit",
-      bedrooms: String(input.bedrooms),
-      bathrooms: String(input.bathrooms),
-      max_guests: input.maxGuests,
-    });
-
-    // Record Audit Log through the tenant-checked, actor-bound RPC.
-    await recordAuditEvent(context, {
-      action: "property.created",
-      entityType: "property",
-      entityId: insertedProperty.id,
-      metadata: { name: input.name, property_type: input.propertyType },
-    });
-
-    return insertedProperty.id;
+  if (rpcError || typeof rpcData !== "string") {
+    if (rpcError?.code === "23505") throw new Error("A property with that slug already exists in this workspace.");
+    throw new Error("Unable to create property. Please try again.");
   }
 
   // Update additional fields (pricing, rules, coordinates) if RPC succeeded
-  const propertyId = rpcData as string;
-  await supabase
+  const propertyId = rpcData;
+  const { error: updateError, count: updatedCount } = await supabase
     .from("properties")
     .update({
       status: input.status,
-      base_price: String(input.basePrice || 0),
-      cleaning_fee: String(input.cleaningFee || 0),
-      security_deposit: String(input.securityDeposit || 0),
-      latitude: input.latitude ? String(input.latitude) : null,
-      longitude: input.longitude ? String(input.longitude) : null,
+      base_price: String(input.basePrice),
+      cleaning_fee: String(input.cleaningFee),
+      security_deposit: String(input.securityDeposit),
+      management_commission_percent: String(input.managementCommissionPercent),
+      owner_id: input.ownerId || null,
+      latitude: input.latitude === undefined ? null : String(input.latitude),
+      longitude: input.longitude === undefined ? null : String(input.longitude),
       house_rules: input.houseRules || null,
       check_in_time: input.checkInTime || "15:00",
       check_out_time: input.checkOutTime || "11:00",
-    })
+    }, { count: "exact" })
+    .eq("organization_id", context.organization.id)
     .eq("id", propertyId);
+
+  if (updateError || !updatedCount) {
+    throw new Error("The property was created, but some settings could not be saved. Open the property and try again.");
+  }
 
   return propertyId;
 }
@@ -184,13 +142,14 @@ export async function updateProperty(context: OrganizationContext, input: Update
   if (updates.latitude !== undefined) patch.latitude = updates.latitude ? String(updates.latitude) : null;
   if (updates.longitude !== undefined) patch.longitude = updates.longitude ? String(updates.longitude) : null;
 
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("properties")
-    .update(patch)
+    .update(patch, { count: "exact" })
     .eq("organization_id", context.organization.id)
     .eq("id", id);
 
-  if (error) throw new Error("Unable to update property: " + error.message);
+  if (error) throw new Error("Unable to update property.");
+  if (!count) throw new Error("Property not found in this workspace.");
 
   // Update main unit if bedrooms/bathrooms/maxGuests provided
   if (updates.bedrooms !== undefined || updates.bathrooms !== undefined || updates.maxGuests !== undefined) {
@@ -199,11 +158,12 @@ export async function updateProperty(context: OrganizationContext, input: Update
     if (updates.bathrooms !== undefined) unitPatch.bathrooms = String(updates.bathrooms);
     if (updates.maxGuests !== undefined) unitPatch.max_guests = updates.maxGuests;
 
-    await supabase
+    const { error: unitError } = await supabase
       .from("property_units")
       .update(unitPatch)
       .eq("organization_id", context.organization.id)
       .eq("property_id", id);
+    if (unitError) throw new Error("Unable to update the property's unit details.");
   }
 
   await recordAuditEvent(context, {
@@ -225,7 +185,7 @@ export async function archiveProperty(context: OrganizationContext, propertyId: 
     .eq("id", propertyId)
     .is("archived_at", null);
 
-  if (error) throw new Error("Unable to archive property: " + error.message);
+  if (error) throw new Error("Unable to archive property.");
   if (!count) throw new Error("Property not found or already archived.");
 
   await recordAuditEvent(context, {
@@ -243,6 +203,15 @@ export async function addPropertyAmenity(
   details?: string
 ) {
   const supabase = await createClient();
+  const { data: property } = await supabase
+    .from("properties")
+    .select("id")
+    .eq("organization_id", context.organization.id)
+    .eq("id", propertyId)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (!property) throw new Error("Property not found in this workspace.");
+
   const { error } = await supabase.from("property_amenities").insert({
     organization_id: context.organization.id,
     property_id: propertyId,
@@ -250,7 +219,7 @@ export async function addPropertyAmenity(
     details: details || null,
   });
 
-  if (error) throw new Error("Unable to add amenity: " + error.message);
+  if (error) throw new Error("Unable to add amenity.");
 }
 
 export async function removePropertyAmenity(context: OrganizationContext, amenityId: string) {
@@ -261,6 +230,5 @@ export async function removePropertyAmenity(context: OrganizationContext, amenit
     .eq("organization_id", context.organization.id)
     .eq("id", amenityId);
 
-  if (error) throw new Error("Unable to remove amenity: " + error.message);
+  if (error) throw new Error("Unable to remove amenity.");
 }
-

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCanonicalAppOrigin } from "@/lib/auth/password-recovery";
+import { isServiceRoleConfigured } from "@/lib/env.server";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/lib/permissions";
 import type { OrganizationContext } from "@/server/auth/context";
@@ -26,6 +27,10 @@ export async function inviteMember(
   context: OrganizationContext,
   input: { email: string; role: AppRole },
 ): Promise<InviteResult> {
+  if (!isServiceRoleConfigured()) {
+    return { ok: false, error: "Team invitations are not configured for this deployment." };
+  }
+
   const supabase = await createClient();
   const normalizedEmail = input.email.trim().toLowerCase();
   const expiresAt = new Date(Date.now() + INVITATION_TTL_MS).toISOString();
@@ -57,11 +62,12 @@ export async function inviteMember(
     });
 
     if (error) {
-      // A user that already exists is not a failure; membership still activates on accept.
-      const alreadyRegistered = /already/i.test(error.message);
-      if (!alreadyRegistered) {
-        failureCode = "invite_send_failed";
-      }
+      // Never report success when Supabase did not send an invitation. Existing
+      // Auth users need a separately verified onboarding path before they can
+      // safely be attached to an organization.
+      failureCode = /already|exists/i.test(error.message)
+        ? "invite_existing_account"
+        : "invite_send_failed";
     } else {
       invitedUserId = data.user?.id ?? null;
     }
@@ -70,12 +76,16 @@ export async function inviteMember(
   }
 
   // 3. Record the outcome (idempotent; keeps a safe failed state for retry).
-  await supabase.rpc("record_invitation_outcome", {
+  const { error: outcomeError } = await supabase.rpc("record_invitation_outcome", {
     input_invitation_id: invitationId as string,
     input_organization_id: context.organization.id,
     input_invited_user_id: invitedUserId,
     input_failure_code: failureCode,
   });
+
+  if (outcomeError) {
+    return { ok: false, error: "The invitation status could not be saved. Please retry." };
+  }
 
   if (failureCode) {
     return { ok: false, error: "The invitation could not be delivered. You can retry." };
