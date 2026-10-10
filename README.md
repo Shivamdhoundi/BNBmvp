@@ -21,7 +21,7 @@ Cleaning, maintenance, expenses, reporting, import/export, owner payouts, channe
 
 ## Local setup
 
-Prerequisites: Node.js 20.9+ and a Supabase project.
+Prerequisites: Node.js 22.12+ (22.x; see `.nvmrc`) and a Supabase project.
 
 1. Copy the environment template:
 
@@ -40,7 +40,7 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
 3. In **Project Settings → Database**, copy the URI connection string and set `DATABASE_URL`. It is used only by Drizzle migration and administrative scripts; it is never exposed to the browser.
 
-   For invitations, also configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only secret. Set `NEXT_PUBLIC_APP_URL` to the canonical application origin and generate a high-entropy `HEALTHCHECK_SECRET`. Never expose the service-role or database credentials through a `NEXT_PUBLIC_` variable.
+   For invitations and shared auth/API rate limits, configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only secret. Set `NEXT_PUBLIC_APP_URL` to the canonical application origin and generate a high-entropy `HEALTHCHECK_SECRET` (also used to sign password-recovery markers). Never expose the service-role or database credentials through a `NEXT_PUBLIC_` variable. Missing rate-limit configuration fails closed, including at sign-in.
 
 4. Apply the schema and security migration:
 
@@ -69,6 +69,9 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
 ## Useful commands
 
+Production release prerequisites, verified coverage, rollout order and remaining
+live blockers are tracked in [the release record](docs/production-readiness.md).
+
 ```bash
 npm run dev          # local server
 npm run lint         # ESLint
@@ -76,6 +79,9 @@ npm run build        # production build
 npm run db:generate  # create a future Drizzle migration after a schema change
 npm run db:check     # validate migration history
 npm run db:migrate   # apply migrations from drizzle/
+npm run check        # lint, types, unit/API + isolated DB tests, audit, build
+npm run test:e2e     # rebuild with dummy backend, then Chromium security smoke tests
+npm run check:production # validate production configuration (no writes)
 ```
 
 The demo seed and clear commands are intentionally guarded. Before running either, set `DEMO_ORGANIZATION_ID` to the exact target workspace UUID and set `DEMO_DATA_CONFIRM=ALLOW_DEMO_DATA_MUTATION` for that single shell/session. Never add those confirmation values to production deployment variables.

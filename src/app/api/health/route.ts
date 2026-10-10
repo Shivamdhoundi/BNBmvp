@@ -36,12 +36,10 @@ export async function GET(request: NextRequest) {
     // rows, which is fine; an unavailable backend returns an error.
     const probe = supabase
       .from("organizations")
-      .select("id", { head: true, count: "exact" })
-      .limit(1);
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("timeout")), 3000),
-    );
-    const result = await Promise.race([probe, timeout]);
+      .select("id", { head: true })
+      .limit(1)
+      .abortSignal(AbortSignal.timeout(3000));
+    const result = await probe;
     if (result.error) throw new Error("connectivity probe failed");
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch {

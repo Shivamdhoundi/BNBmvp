@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import {
   buildRecoveryCallbackUrl,
-  isValidRecoveryMarker,
   RECOVERY_MARKER_COOKIE,
   RECOVERY_PUBLIC_MESSAGE,
   RECOVERY_SESSION_ERROR,
@@ -15,6 +14,8 @@ import {
   type ResetState,
 } from "@/lib/auth/password-recovery";
 import { createClient } from "@/lib/supabase/server";
+import { enforceAuthRateLimit } from "@/server/rate-limit";
+import { isValidSignedRecoveryMarker } from "@/server/auth/recovery-marker";
 
 export async function requestPasswordRecovery(
   _: RecoveryState,
@@ -26,6 +27,7 @@ export async function requestPasswordRecovery(
   }
 
   try {
+    await enforceAuthRateLimit("password-recovery", parsed.data.email);
     const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: buildRecoveryCallbackUrl(),
@@ -53,7 +55,7 @@ export async function resetPassword(_: ResetState, formData: FormData): Promise<
   const cookieStore = await cookies();
   const marker = cookieStore.get(RECOVERY_MARKER_COOKIE)?.value;
 
-  if (!user || !isValidRecoveryMarker(marker, user.id)) {
+  if (!user || !isValidSignedRecoveryMarker(marker, user.id)) {
     return { formError: RECOVERY_SESSION_ERROR };
   }
 

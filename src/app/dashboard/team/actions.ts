@@ -8,6 +8,7 @@ import { requireOrganizationContext } from "@/server/auth/context";
 import { requireMfaForPrivilegedAction } from "@/server/auth/mfa";
 import { inviteMember, revokeInvitation } from "@/server/invitations/service";
 import { changeMemberRole, changeMemberStatus } from "@/server/team/service";
+import { enforceRateLimit, RateLimitError } from "@/server/rate-limit";
 
 export type TeamActionState = {
   error?: string;
@@ -29,8 +30,9 @@ export async function inviteMemberAction(_: TeamActionState, formData: FormData)
   if (!can(context.role, "team:invite")) return { error: "You do not have permission to invite members." };
   try {
     await requireMfaForPrivilegedAction(context);
-  } catch {
-    return { error: "Multi-factor authentication is required." };
+    await enforceRateLimit("invite", context.user.id, 10);
+  } catch (error) {
+    return { error: error instanceof RateLimitError ? error.message : "Multi-factor authentication is required." };
   }
 
   const parsed = inviteSchema.safeParse({
@@ -67,6 +69,7 @@ export async function resendInvitationAction(formData: FormData): Promise<void> 
 
   try {
     await requireMfaForPrivilegedAction(context);
+    await enforceRateLimit("invite", context.user.id, 10);
   } catch {
     return;
   }

@@ -71,6 +71,13 @@
       "when": 1790621930131,
       "tag": "0009_core_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791653922455,
+      "tag": "0010_production_security",
+      "breakpoints": true
     }
   ]
 }

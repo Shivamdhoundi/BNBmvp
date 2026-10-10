@@ -57,21 +57,10 @@ export async function createProperty(context: OrganizationContext, input: Create
     if (!owner) throw new Error("Select an owner from this workspace.");
   }
 
-  // The RPC is the authoritative, transactional property + unit creation path.
-  const { data: rpcData, error: rpcError } = await supabase.rpc("create_property_with_unit", {
+  // Property, unit, pricing, owner and audit entry commit or roll back together.
+  const { data: rpcData, error: rpcError } = await supabase.rpc("create_property_complete", {
     input_organization_id: context.organization.id,
-    input_name: input.name,
-    input_slug: input.slug,
-    input_property_type: input.propertyType,
-    input_address_line_1: input.addressLine1,
-    input_address_line_2: input.addressLine2 || "",
-    input_city: input.city || "Gurugram",
-    input_state: input.state || "Haryana",
-    input_postal_code: input.postalCode || "",
-    input_description: input.description || "",
-    input_bedrooms: input.bedrooms,
-    input_bathrooms: input.bathrooms,
-    input_max_guests: input.maxGuests,
+    input,
   });
 
   if (rpcError || typeof rpcData !== "string") {
@@ -79,31 +68,7 @@ export async function createProperty(context: OrganizationContext, input: Create
     throw new Error("Unable to create property. Please try again.");
   }
 
-  // Update additional fields (pricing, rules, coordinates) if RPC succeeded
-  const propertyId = rpcData;
-  const { error: updateError, count: updatedCount } = await supabase
-    .from("properties")
-    .update({
-      status: input.status,
-      base_price: String(input.basePrice),
-      cleaning_fee: String(input.cleaningFee),
-      security_deposit: String(input.securityDeposit),
-      management_commission_percent: String(input.managementCommissionPercent),
-      owner_id: input.ownerId || null,
-      latitude: input.latitude === undefined ? null : String(input.latitude),
-      longitude: input.longitude === undefined ? null : String(input.longitude),
-      house_rules: input.houseRules || null,
-      check_in_time: input.checkInTime || "15:00",
-      check_out_time: input.checkOutTime || "11:00",
-    }, { count: "exact" })
-    .eq("organization_id", context.organization.id)
-    .eq("id", propertyId);
-
-  if (updateError || !updatedCount) {
-    throw new Error("The property was created, but some settings could not be saved. Open the property and try again.");
-  }
-
-  return propertyId;
+  return rpcData;
 }
 
 export async function updateProperty(context: OrganizationContext, input: UpdatePropertyInput) {
@@ -139,8 +104,8 @@ export async function updateProperty(context: OrganizationContext, input: Update
   if (updates.houseRules !== undefined) patch.house_rules = updates.houseRules;
   if (updates.ownerId !== undefined) patch.owner_id = updates.ownerId;
   if (updates.managementCommissionPercent !== undefined) patch.management_commission_percent = String(updates.managementCommissionPercent);
-  if (updates.latitude !== undefined) patch.latitude = updates.latitude ? String(updates.latitude) : null;
-  if (updates.longitude !== undefined) patch.longitude = updates.longitude ? String(updates.longitude) : null;
+  if (updates.latitude !== undefined) patch.latitude = updates.latitude === null ? null : String(updates.latitude);
+  if (updates.longitude !== undefined) patch.longitude = updates.longitude === null ? null : String(updates.longitude);
 
   const { error, count } = await supabase
     .from("properties")
@@ -158,12 +123,12 @@ export async function updateProperty(context: OrganizationContext, input: Update
     if (updates.bathrooms !== undefined) unitPatch.bathrooms = String(updates.bathrooms);
     if (updates.maxGuests !== undefined) unitPatch.max_guests = updates.maxGuests;
 
-    const { error: unitError } = await supabase
+    const { error: unitError, count: unitCount } = await supabase
       .from("property_units")
-      .update(unitPatch)
+      .update(unitPatch, { count: "exact" })
       .eq("organization_id", context.organization.id)
       .eq("property_id", id);
-    if (unitError) throw new Error("Unable to update the property's unit details.");
+    if (unitError || !unitCount) throw new Error("Unable to update the property's unit details.");
   }
 
   await recordAuditEvent(context, {

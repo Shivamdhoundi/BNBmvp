@@ -12,7 +12,24 @@
 
 These require no database and never touch production.
 
-## Integration, RLS, and E2E tests (disposable Supabase only)
+## Implemented isolated security tests
+
+`npm run test:db` starts in-memory PGlite PostgreSQL, installs every migration,
+creates fake Auth tables/functions, and runs real RLS/RPC tests. It cannot connect
+to a hosted database and does not read `.env.local`. It covers all roles across
+two tenants, MFA gates, owner suspension, property transactions, unit edits,
+booking overlaps, invitation acceptance, team invariants and rate limiting.
+
+`npx playwright install chromium` then `npm run test:e2e` builds and runs a local
+production server using a dummy unreachable backend. This checks browser CSP,
+hydration, unauthenticated protections, and safe failures. It rebuilds because
+Next.js freezes public environment variables at build time. Run `npm run build`
+again before manually starting the app with your normal backend.
+
+These tests are safe in CI without secrets. They do not replace real hosted
+Supabase Auth, email delivery, concurrency, or authenticated browser acceptance.
+
+## Remaining hosted integration and acceptance tests (disposable Supabase only)
 
 The following suites MUST run against a disposable local Supabase project or a
 dedicated test project — never production. They require:
