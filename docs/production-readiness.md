@@ -37,9 +37,10 @@ been performed as part of this hardening pass.
 | Staging acceptance | Successful real sign-in, MFA, invite email/acceptance, password recovery and property/guest/owner/booking CRUD remain unverified. |
 | Operations | SMTP delivery, backup/restore drill, uptime monitor, alert routing, deployment checks, and rollback need live evidence. |
 
-GitHub `main` had no branch protection at inspection time. Enable the required
-CI check before merging this candidate; do not treat a green local build as a
-release gate.
+GitHub `main` now requires the up-to-date `Verify production build` check from
+the GitHub Actions app. Force pushes and branch deletion are disabled. Repository
+administrators retain an override; Vercel Deployment Checks still need configuring
+because GitHub protection alone does not control Vercel domain assignment.
 
 The production database reports PostgreSQL 17.6.1.166. Review the supported
 17.11 security upgrade with Supabase before release. See the
@@ -79,8 +80,8 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
    verified-email acceptance, revoked/expired invitations, reset email and new
    password, MFA, sign-out, property/unit/pricing persistence, guest and owner
    edits, booking edit/cancellation, overlap rejection, and suspended-user denial.
-7. Require GitHub check `Verify production build` on the protected main branch
-   and in Vercel Deployment Checks. CI alone does not prevent Vercel Git deploys
+7. Keep GitHub check `Verify production build` required on main and configure
+   it in Vercel Deployment Checks. CI alone does not prevent Vercel Git deploys
    from becoming production. Review the full dependency audit as well as runtime
    audit; development-only advisories remain (see below).
 8. Confirm backup retention and successfully restore to an isolated database.

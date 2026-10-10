@@ -28,7 +28,7 @@ export const getMfaSnapshot = cache(async (): Promise<MfaSnapshot> => {
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
     supabase.auth.mfa.listFactors(),
   ]);
-  if (aalError || factorsError || !aal || !factors) {
+  if (aalError || factorsError || !aal || !factors || (aal.currentLevel !== "aal1" && aal.currentLevel !== "aal2")) {
     throw new Error("Unable to verify authentication assurance.");
   }
 

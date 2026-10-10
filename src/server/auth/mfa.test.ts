@@ -18,4 +18,9 @@ describe("MFA failures deny access", () => {
     mocks.factors.mockResolvedValue({ data: { totp: [] }, error: null });
     await expect(getMfaSnapshot()).rejects.toThrow('Unable to verify');
   });
+  it("rejects a missing session even when the provider reports no error", async () => {
+    mocks.aal.mockResolvedValue({ data: { currentLevel: null }, error: null });
+    mocks.factors.mockResolvedValue({ data: { totp: [] }, error: null });
+    await expect(getMfaSnapshot()).rejects.toThrow('Unable to verify');
+  });
 });
