@@ -25,16 +25,8 @@ const navigation = [
   { href: "/dashboard/guests", label: "Guests", icon: Users },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
-  { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText, soon: true },
+  { href: "/dashboard/expenses", label: "Expenses", icon: ReceiptText },
 ];
-
-function SoonBadge() {
-  return (
-    <span className="ml-auto rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-      Soon
-    </span>
-  );
-}
 
 export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavigate?: () => void; onClose?: () => void; canManageTeam?: boolean }) {
   const pathname = usePathname();
@@ -75,7 +67,6 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavi
             >
               <Icon className={`h-5 w-5 ${isActive ? "text-rose-500" : "text-slate-500 group-hover:text-slate-400"}`} />
               <span>{item.label}</span>
-              {item.soon ? <SoonBadge /> : null}
             </Link>
           );
         })}
@@ -90,8 +81,8 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavi
             <ChevronDown className="h-3.5 w-3.5" />
           </div>
           <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-            <Link href="/dashboard/cleaning" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Cleaning<SoonBadge /></Link>
-            <Link href="/dashboard/maintenance" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Maintenance<SoonBadge /></Link>
+            <Link href="/dashboard/cleaning" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-400 hover:text-slate-200">Cleaning</Link>
+            <Link href="/dashboard/maintenance" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-400 hover:text-slate-200">Maintenance</Link>
           </div>
         </div>
 
@@ -104,7 +95,6 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavi
           >
             <BarChart3 className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
             <span>Reports</span>
-            <SoonBadge />
           </Link>
 
           <div className="mt-1">
@@ -116,8 +106,8 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavi
               <ChevronDown className="h-3.5 w-3.5" />
             </div>
             <div className="pl-11 pr-3 flex flex-col gap-1 mt-1">
-              <Link href="/dashboard/data" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Excel / Export<SoonBadge /></Link>
-              <Link href="/dashboard/import" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-500 hover:text-slate-300">Import Data<SoonBadge /></Link>
+              <Link href="/dashboard/data" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-400 hover:text-slate-200">CSV / Export</Link>
+              <Link href="/dashboard/import" onClick={onNavigate} className="flex items-center py-2 text-sm text-slate-400 hover:text-slate-200">Import guests</Link>
             </div>
           </div>
         </div>
@@ -146,10 +136,8 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: { onNavi
         >
           <Settings className="h-5 w-5 text-slate-500 group-hover:text-slate-400" />
           <span>Settings</span>
-          <SoonBadge />
         </Link>
       </div>
     </aside>
   );
 }
-

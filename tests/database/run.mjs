@@ -145,6 +145,130 @@ try {
   await test('client cannot choose rate limits',async()=>{
     await asUser(1); await assert.rejects(db.query("SELECT public.consume_request_limit('test-key',100,60)"),/permission denied/);
   });
+  const insertTask = async (assignee = user(5), prop = property(1), organization = org(1)) => {
+    const result = await db.query("INSERT INTO public.operation_tasks(organization_id,property_id,kind,title,due_date,assigned_to,created_by) VALUES($1,$2,'cleaning','Turnover','2030-01-03',$3,$4) RETURNING *", [organization,prop,assignee,user(3)]);
+    return result.rows[0];
+  };
+  const insertExpense = async (amount = '12.34', prop = property(1)) => {
+    const result = await db.query("INSERT INTO public.expenses(organization_id,property_id,description,category,amount,incurred_on,created_by) VALUES($1,$2,'Supplies','supplies',$3,'2030-01-03',$4) RETURNING *",[org(1),prop,amount,user(3)]);
+    return result.rows[0];
+  };
+  await test('task create binds actor and atomically audits',async()=>{
+    await asUser(1); const task = await insertTask();
+    assert.equal(task.created_by,user(1)); assert.equal(task.status,'open');
+    assert.equal((await db.query('SELECT count(*)::int n FROM public.audit_logs WHERE entity_id=$1',[task.id])).rows[0].n,1);
+  });
+  await test('vendor sees only assigned tasks and can complete one',async()=>{
+    await asUser(3); const task = await insertTask(); await insertTask(user(3));
+    await asUser(5); assert.equal(await count('operation_tasks'),1);
+    const result = await db.query("UPDATE public.operation_tasks SET status='completed',version=2 WHERE id=$1 RETURNING completed_at",[task.id]);
+    assert.ok(result.rows[0].completed_at);
+    await asUser(4); assert.equal(await count('operation_tasks'),0);
+    await asUser(7); assert.equal(await count('operation_tasks'),0);
+  });
+  await test('vendor cannot alter task assignment or scheduling',async()=>{
+    await asUser(3); const task = await insertTask(); await asUser(5);
+    await assert.rejects(db.query("UPDATE public.operation_tasks SET assigned_to=$1,version=2 WHERE id=$2",[user(3),task.id]),/Vendors may only/);
+  });
+  await test('vendor cannot create tasks',async()=>{
+    await asUser(5); await assert.rejects(insertTask(),/Not authorized|row-level security/);
+  });
+  await test('suspended vendor loses task access',async()=>{
+    await asUser(3); await insertTask(); await db.exec('RESET ROLE');
+    await db.query("UPDATE public.organization_members SET status='suspended' WHERE user_id=$1",[user(5)]);
+    await asUser(5); assert.equal(await count('operation_tasks'),0);
+  });
+  await test('cross-workspace task property rejected',async()=>{
+    await asUser(3); await assert.rejects(insertTask(null,property(3)),/Invalid property/);
+  });
+  await test('cross-workspace assignee rejected',async()=>{
+    await asUser(3); await assert.rejects(insertTask(user(7)),/Invalid assignee/);
+  });
+  await test('inactive assignee rejected',async()=>{
+    await asUser(3); await assert.rejects(insertTask(user(6)),/Invalid assignee/);
+  });
+  await test('stale task edit rejected',async()=>{
+    await asUser(3); const task = await insertTask();
+    await db.query("UPDATE public.operation_tasks SET status='in_progress',version=2 WHERE id=$1",[task.id]);
+    await assert.rejects(db.query("UPDATE public.operation_tasks SET status='completed',version=2 WHERE id=$1",[task.id]),/Stale record/);
+  });
+  await test('expense decimal value preserved and owner isolated',async()=>{
+    await asUser(3); await insertExpense('0.10'); await insertExpense('0.20',property(2));
+    await asUser(4); assert.equal(await count('expenses'),1);
+    assert.equal((await db.query('SELECT amount::text FROM public.expenses')).rows[0].amount,'0.10');
+    await asUser(7); assert.equal(await count('expenses'),0);
+    await asUser(5); assert.equal(await count('expenses'),0);
+  });
+  await test('expenses cannot be overwritten',async()=>{
+    await asUser(3); const expense = await insertExpense();
+    await assert.rejects(db.query('UPDATE public.expenses SET amount=999,version=2 WHERE id=$1',[expense.id]),/immutable/);
+  });
+  await test('void requires reason even through direct database access',async()=>{
+    await asUser(3); const expense = await insertExpense();
+    await assert.rejects(db.query("UPDATE public.expenses SET status='void',version=2 WHERE id=$1",[expense.id]),/expenses_void_valid/);
+  });
+  await test('financial records cannot be deleted',async()=>{
+    await asUser(3); const expense = await insertExpense();
+    await assert.rejects(db.query('DELETE FROM public.expenses WHERE id=$1',[expense.id]),/permission denied/);
+  });
+  await test('expense cross-tenant property rejected',async()=>{
+    await asUser(3); await assert.rejects(insertExpense('10',property(3)),/Invalid property/);
+  });
+  await test('report includes completed stays and excludes void expenses',async()=>{
+    await db.query("UPDATE public.bookings SET status='completed',total_price=123.45 WHERE property_id=$1",[property(1)]);
+    await asUser(3); await insertExpense('0.10'); await insertExpense('0.20'); const expense=await insertExpense('999');
+    await db.query("UPDATE public.expenses SET status='void',void_reason='Duplicate',version=2 WHERE id=$1",[expense.id]);
+    await asUser(4);
+    const report=(await db.query("SELECT * FROM public.operating_report($1,'2030-01-01','2030-01-31')",[org(1)])).rows;
+    assert.equal(report.length,1); assert.equal(report[0].booked_revenue,'123.45'); assert.equal(report[0].recorded_expenses,'0.30');
+    await asUser(7); assert.equal((await db.query("SELECT * FROM public.operating_report($1,'2030-01-01','2030-01-31')",[org(1)])).rows.length,0);
+  });
+  await test('MFA requirements apply to operational data',async()=>{
+    await asUser(1); await insertTask(); await insertExpense(); await db.exec('RESET ROLE');
+    await db.query("INSERT INTO auth.mfa_factors(user_id,status) VALUES($1,'verified')",[user(1)]);
+    await asUser(1); assert.equal(await count('operation_tasks'),0); assert.equal(await count('expenses'),0);
+    await asUser(1,'aal2'); assert.equal(await count('operation_tasks'),1); assert.equal(await count('expenses'),1);
+  });
+  await test('anonymous callers cannot read new operational tables',async()=>{
+    await db.exec('SET LOCAL ROLE anon'); await assert.rejects(count('operation_tasks'),/permission denied/);
+  });
+  await test('vendors get only assigned property names, no profile directory',async()=>{
+    await asUser(3); await insertTask(); await asUser(5);
+    const names=(await db.query('SELECT * FROM public.task_property_names($1)',[org(1)])).rows;
+    assert.equal(names.length,1); assert.equal(names[0].id,property(1));
+    await assert.rejects(db.query('SELECT * FROM public.operation_assignees($1)',[org(1)]),/Not authorized/);
+  });
+  await test('settings updates are admin-only and currency immutable to clients',async()=>{
+    await asUser(1); await db.query("UPDATE public.organizations SET name='Renamed',timezone='UTC' WHERE id=$1",[org(1)]);
+    assert.equal((await db.query("SELECT count(*)::int n FROM public.audit_logs WHERE action='settings.updated'")).rows[0].n,1);
+    await asUser(3); assert.equal((await db.query("UPDATE public.organizations SET name='Denied' WHERE id=$1 RETURNING id",[org(1)])).rows.length,0);
+    await asUser(1); await assert.rejects(db.query("UPDATE public.organizations SET default_currency='USD' WHERE id=$1",[org(1)]),/permission denied/);
+  });
+  await test('invalid timezone cannot break reporting',async()=>{
+    await asUser(1); await assert.rejects(db.query("UPDATE public.organizations SET timezone='invalid' WHERE id=$1",[org(1)]),/Invalid workspace/);
+  });
+  const importRows = [{first_name:'Imported',last_name:'Guest',email:'imported@example.test',phone:'+123'}];
+  await test('guest imports are atomic, audited and idempotent',async()=>{
+    await asUser(1);
+    const first=(await db.query('SELECT public.import_guests($1,$2) result',[org(1),JSON.stringify(importRows)])).rows[0].result;
+    assert.equal(first.imported,1); assert.equal(await count('guests'),3);
+    const repeat=(await db.query('SELECT public.import_guests($1,$2) result',[org(1),JSON.stringify(importRows)])).rows[0].result;
+    assert.equal(repeat.already_imported,true); assert.equal(await count('guests'),3);
+    const duplicate=(await db.query('SELECT public.import_guests($1,$2) result',[org(1),JSON.stringify([{...importRows[0],first_name:'Different'}])])).rows[0].result;
+    assert.equal(duplicate.skipped,1); assert.equal(duplicate.imported,0);
+    assert.equal((await db.query("SELECT identity_verified FROM public.guests WHERE email='imported@example.test'")).rows[0].identity_verified,false);
+  });
+  await test('invalid guest row rolls back entire import',async()=>{
+    await asUser(1); await db.exec('SAVEPOINT bad_import');
+    await assert.rejects(db.query('SELECT public.import_guests($1,$2)',[org(1),JSON.stringify([...importRows,{...importRows[0],first_name:''}])]),/Invalid guest data/);
+    await db.exec('ROLLBACK TO SAVEPOINT bad_import'); assert.equal(await count('guests'),2);
+  });
+  await test('guest import rejects cross-tenant administrator',async()=>{
+    await asUser(7); await assert.rejects(db.query('SELECT public.import_guests($1,$2)',[org(1),JSON.stringify(importRows)]),/Not authorized/);
+  });
+  await test('operations cannot bulk import guests',async()=>{
+    await asUser(3); await assert.rejects(db.query('SELECT public.import_guests($1,$2)',[org(1),JSON.stringify(importRows)]),/Not authorized/);
+  });
   await test('all public tables have RLS enabled',async()=>{
     assert.equal((await db.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public' AND NOT rowsecurity")).rows[0].n,0);
   });

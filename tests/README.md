@@ -19,6 +19,13 @@ creates fake Auth tables/functions, and runs real RLS/RPC tests. It cannot conne
 to a hosted database and does not read `.env.local`. It covers all roles across
 two tenants, MFA gates, owner suspension, property transactions, unit edits,
 booking overlaps, invitation acceptance, team invariants and rate limiting.
+It also covers operational task/vendor access, assignment boundaries, immutable
+expenses, exact report totals and owner scope, settings grants, atomic guest
+imports, and idempotent replays (53 database checks across 13 migrations).
+
+The 94 unit/action/API tests additionally cover input validation, fixed-point
+money arithmetic, strict CSV parsing/formula neutralization, authorized audited
+exports with truncation rejection, and task/expense action tenant binding.
 
 `npx playwright install chromium` then `npm run test:e2e` builds and runs a local
 production server using a dummy unreachable backend. This checks browser CSP,
@@ -49,8 +56,10 @@ Planned coverage (tasks 8.3–8.5):
 - MFA enrollment/verification gates (AAL1 vs AAL2)
 - Suspended/invited member cannot obtain active context or tenant data
 
-E2E (Playwright) covers login/logout, forgot/reset password, invitation
-acceptance, unauthorized dashboard/Team access, and MFA flows.
+Hosted E2E still needs to cover successful login/logout, forgot/reset password,
+invitation acceptance, MFA, and authenticated workflows. The implemented browser
+suite only covers anonymous access and safe failures, including all new module
+routes and the export endpoint; it is not evidence of successful hosted CRUD.
 
 > These suites are intentionally excluded from `npm test` (see `vitest.config.ts`)
 > so the default command cannot accidentally run against a live database.

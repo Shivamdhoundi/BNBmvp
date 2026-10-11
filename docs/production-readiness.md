@@ -1,8 +1,10 @@
 # Production release record
 
-Scope: the existing invite-only internal StayPilot MVP. The future cleaning,
-maintenance, expenses, reporting, imports, payouts and integration modules are
-not part of this release.
+Scope: invite-only StayPilot operations, now including manual cleaning and
+maintenance tasks, expense recording/voiding, completed-stay operating reports,
+workspace settings, audited CSV exports and previewed guest CSV imports.
+This is not the full product: payouts, channel sync, messaging, AI, automatic
+turnover generation and property/booking/owner imports remain unfinished.
 
 Status on 2026-10-11: **release candidate; NOT approved for production**.
 Code changes are on `production-hardening`. No live migration or deployment has
@@ -14,11 +16,15 @@ been performed as part of this hardening pass.
   with `npm audit --omit=dev`.
 - Unit/API tests cover permissions, API MFA/origin guards, bounded request bodies,
   failed MFA providers, signed recovery markers, validation and redirects.
-- Disposable PGlite PostgreSQL tests install all 11 migrations and exercise real
+- Disposable PGlite PostgreSQL tests install all 13 migrations and exercise real
   RLS/functions: two tenants, all roles, suspended owners, MFA assurance, private
   documents, team profiles, property transactions, unit edits, overlapping dates,
   invitation replay and role escalation, last-admin invariants, shared rate limits.
-- Chromium tests use a local production build with an unreachable dummy backend:
+- 94 unit/action/API tests and 53 database tests pass. New coverage includes task
+  assignment and stale-update rejection, vendor scoping, immutable/void expenses,
+  owner-scoped exact-decimal report totals, settings protection, CSV formula
+  neutralization, bounded exports, and atomic/idempotent guest import.
+- All 13 Chromium smoke tests pass using a local production build with an unreachable dummy backend:
   CSP/hydration, sign-in failure, dashboard redirect, disabled signup, API access,
   recovery failure, and health-check failure. These do NOT prove successful hosted
   Supabase sign-in, SMTP delivery, or authenticated browser CRUD.
@@ -33,7 +39,7 @@ been performed as part of this hardening pass.
 | Invite-only Auth | Sydney Supabase project `mmewrudedcifohamfetc` returns `disable_signup=false` and `mailer_autoconfirm=true`. Disable public signup and require email confirmation before inviting users. |
 | Admin MFA | 3 privileged memberships; no privileged users with verified factors in the inspected database. Enroll admins before enabling enforcement. |
 | Runtime configuration | Local environment lacks canonical app URL, service-role key, health secret, and MFA deadline. Vercel values could not be inspected. Configure these in the deployment environment; never commit them. |
-| Migration | Live Drizzle history contains 10 entries; this branch adds `0010_production_security`. Validate on staging, then apply through Drizzle before deploying this code. |
+| Migration | Live Drizzle history contains 10 entries; this branch adds `0010_production_security`, `0011_operational_workflows`, and `0012_workspace_data_tools`. Validate on staging, then apply through Drizzle before deploying this code. |
 | Staging acceptance | Successful real sign-in, MFA, invite email/acceptance, password recovery and property/guest/owner/booking CRUD remain unverified. |
 | Operations | SMTP delivery, backup/restore drill, uptime monitor, alert routing, deployment checks, and rollback need live evidence. |
 
@@ -60,9 +66,12 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
    not browser variables. Preview environments must use a staging backend and
    their own canonical `NEXT_PUBLIC_APP_URL`.
 3. Apply migrations to staging: `npm run db:migrate`. Do not use `db:push` or mix
-   the Drizzle journal with Supabase migration history. Migration 0010 introduces
-   private tables outside the Drizzle-generated schema snapshots; preserve its
-   custom SQL on future schema generation.
+   the Drizzle journal with Supabase migration history. Migrations 0010 and 0012
+   introduce private tables outside the Drizzle-generated schema snapshots;
+   preserve their custom SQL on future schema generation. Snapshot 0011 also
+   reconciles invitations and archive columns created by earlier custom SQL;
+   it deliberately does not recreate those existing objects. A fresh schema
+   generation reports no drift.
 4. Enroll privileged users at `/mfa/enroll`, verify AAL2, and retain a tested
    recovery-capable administrator. Set `MFA_ENFORCEMENT_DATE` to a past ISO date
    and, using the migration/admin database connection, enable the database gate:
@@ -80,6 +89,9 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
    verified-email acceptance, revoked/expired invitations, reset email and new
    password, MFA, sign-out, property/unit/pricing persistence, guest and owner
    edits, booking edit/cancellation, overlap rejection, and suspended-user denial.
+   Also verify task creation/reassignment/progress as operations and vendor users,
+   expenses/void reasons, owner-visible reports, CSV downloads and formula safety,
+   preview/import/re-import with rollback on invalid rows, and settings conflicts.
 7. Keep GitHub check `Verify production build` required on main and configure
    it in Vercel Deployment Checks. CI alone does not prevent Vercel Git deploys
    from becoming production. Review the full dependency audit as well as runtime
@@ -94,7 +106,7 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
 
 ## Deployment compatibility and rollback
 
-The new code requires migration 0010 and `SUPABASE_SERVICE_ROLE_KEY` for rate
+The new code requires migrations 0010–0012 and `SUPABASE_SERVICE_ROLE_KEY` for rate
 limits. Missing configuration fails closed: login and protected write requests
 will not proceed. The code must not be deployed ahead of its database changes.
 Rate limits use shared PostgreSQL counters, not per-process memory. On Vercel,
@@ -112,6 +124,26 @@ staging. Membership mutations now serialize on an organization advisory lock;
 exercise concurrent admin changes on the real staging database as part of release.
 
 ## Known limitations and follow-up
+
+- Operational reports count completed bookings by checkout date in the workspace
+  reporting timezone, not collected cash. They exclude confirmed/pending/cancelled
+  stays and void expenses. The difference is before fees/taxes, not owner payout
+  or accounting profit. Base currency cannot be relabeled by authenticated clients.
+- Task due dates are property-local calendar dates. Staff manage assignment and
+  scheduling; vendors can only progress their own tasks. Automatic checkout
+  turnovers, recurring tasks, attachments and outbound notifications are not built.
+- CSV exports cover six datasets, are admin-only, audited and limited to 1,000
+  rows in a creation-date window (up to 367 days). Truncated data is rejected.
+  Directories/reports fail rather than display partial results if the backend
+  response cap is exceeded. Add server-side search/paging before larger tenants.
+- Guest import supports 200 rows / 128 KB, validates before confirmation and again
+  on submission, and commits atomically with audit. Identical normalized batches
+  are not applied twice. Existing emails (including archived records) are skipped;
+  email-less guests in different batches can duplicate. No other entity imports.
+- Full authenticated browser-to-PostgREST verification is still blocked on a
+  dedicated staging target and deployment credentials; local SQL tests do not
+  prove live RPC exposure. Provider discovery via the installed Vercel CLI also
+  requested device authentication. No external provider has been provisioned.
 
 - The full npm audit still reports tooling advisories in the `braces`/Next ESLint
   dependency chain and old esbuild bundled by Drizzle. Runtime audit is clear.

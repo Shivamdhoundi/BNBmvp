@@ -17,7 +17,13 @@ Internal, multi-tenant short-term rental operations platform for a controlled Gu
 - Append-only audit records for security and core operational mutations
 - Versioned `GET`/`POST /api/v1/properties` route
 
-Cleaning, maintenance, expenses, reporting, import/export, owner payouts, channel integrations, AI, and messaging remain clearly marked as future work.
+The release-candidate branch adds cleaning and maintenance task scheduling,
+assignment and progress, an immutable expense ledger with voiding, completed-stay
+operating reports, workspace settings, audited CSV exports, and previewed atomic
+guest CSV imports. Migrations 0010–0012 must be applied before deploying this code.
+These workflows have isolated automated coverage; hosted authenticated acceptance
+is still required. Owner payouts, booking-channel integrations, AI, messaging,
+automated turnovers, and property/booking/owner imports remain unfinished.
 
 ## Local setup
 

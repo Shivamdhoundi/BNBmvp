@@ -1,26 +1,18 @@
-export const metadata = {
-  title: "Export Data | StayPilot",
-};
+import { can } from "@/lib/permissions";
+import { requireOrganizationContext } from "@/server/auth/context";
+import { Field, inputClass, ModulePage } from "@/components/operations/shared";
 
-export default function ExportDataPage() {
-  return (
-    <div className="flex flex-col h-full min-h-[calc(100vh-64px)]">
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8 py-5">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Export Data</h1>
-          <p className="text-sm text-slate-500">Export your data to Excel or CSV</p>
-        </div>
-      </header>
-      
-      <main className="flex-1 p-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </div>
-          <h2 className="text-lg font-semibold text-slate-900">Coming Soon</h2>
-          <p className="mt-1 text-sm text-slate-500">Data export functionality is in development.</p>
-        </div>
-      </main>
-    </div>
-  );
+export default async function ExportPage() {
+  const context = await requireOrganizationContext();
+  if (!can(context.role, "data:export")) return <ModulePage title="Export data" description="Only administrators can export workspace data.">{null}</ModulePage>;
+  const today = new Date().toISOString().slice(0, 10);
+  return <ModulePage title="Export data" description="Download a UTF-8 CSV that opens in Excel or other spreadsheet software. Exports contain personal data; store and share them securely. Every export is audited.">
+    <form action="/api/v1/export" method="get" className="max-w-xl space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+      <Field label="Dataset"><select name="dataset" className={inputClass}>{[["properties","Properties"],["guests","Guests"],["owners","Owners"],["bookings","Bookings"],["expenses","Expenses"],["operation_tasks","Cleaning / maintenance tasks"]].map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></Field>
+      <Field label="Created from (UTC, inclusive)"><input required type="date" name="from" defaultValue={today.slice(0,7) + "-01"} className={inputClass} /></Field>
+      <Field label="Created to (UTC, inclusive)"><input required type="date" name="to" defaultValue={today} className={inputClass} /></Field>
+      <p className="text-sm text-slate-600">Maximum 1,000 records and 367 days per export. The date filter is record creation date, not stay or expense date. Large results are rejected, never silently truncated.</p>
+      <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Download CSV</button>
+    </form>
+  </ModulePage>;
 }

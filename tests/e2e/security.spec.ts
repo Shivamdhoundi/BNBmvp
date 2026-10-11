@@ -27,11 +27,19 @@ test("signup is disabled", async ({ page }) => {
 });
 
 test("protected APIs reject unauthenticated and cross-origin requests", async ({ request }) => {
+  expect((await request.get("/api/v1/export?dataset=guests&from=2030-01-01&to=2030-01-31")).status()).toBe(401);
   expect((await request.get("/api/v1/properties")).status()).toBe(401);
   expect((await request.get("/api/health")).status()).toBe(401);
   expect((await request.post("/api/v1/properties", { data: {}, headers: { origin: "https://attacker.example" } })).status()).toBe(403);
   expect((await request.post("/api/v1/properties", { data: {}, headers: { origin: "http://127.0.0.1:3100" } })).status()).toBe(401);
 });
+
+for (const route of ["cleaning", "maintenance", "expenses", "reports", "settings", "data", "import"]) {
+  test(`${route} workflow requires sign-in`, async ({ page }) => {
+    await page.goto(`/dashboard/${route}`);
+    await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=%2Fdashboard%2F${route}`));
+  });
+}
 
 test("recovery rejects invalid links and does not disclose account existence", async ({ page }) => {
   await page.goto("/auth/recovery?code=invalid&type=recovery");
