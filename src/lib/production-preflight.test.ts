@@ -13,7 +13,7 @@ const valid = {
   VERCEL_ENV: 'production',
 };
 function run(env: Record<string, string>) {
-  return spawnSync(process.execPath, [script], { env, encoding: 'utf8' });
+  return spawnSync(process.execPath, [script], { env: { NODE_ENV: 'test', ...env }, encoding: 'utf8' });
 }
 describe('production environment preflight', () => {
   it('passes explicit production configuration without claiming live acceptance', () => {
