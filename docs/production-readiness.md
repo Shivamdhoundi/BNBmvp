@@ -57,7 +57,7 @@ production release. WhatsApp/calendar configuration is draft-only, not automatio
 | Requirement | Observed state / action |
 | --- | --- |
 | Vercel access | Project `staypilot`, team `bnbpilot-team`: deployment/env metadata accessible, but runtime logs return 403 and CLI has no authenticated session. Restore scoped access for live investigation. |
-| Invite-only Auth | Mumbai Auth configuration and successful SMTP delivery still need verification. Earlier Sydney findings do not establish Mumbai settings. |
+| Invite-only Auth | Mumbai `/auth/v1/settings` returns `disable_signup=false`, `mailer_autoconfirm=false`, and email auth enabled (2026-10-13). Disable public signup in provider settings; the app's disabled signup page alone does not protect the Auth API. Successful SMTP delivery still needs verification. |
 | Admin MFA | Mumbai has 3 active privileged users and zero with verified factors; database enforcement is false. Enroll administrators before enabling both gates to prevent lockout. |
 | Runtime configuration | Vercel list shows five variables, all Preview-only. Production settings, canonical app URL and MFA deadline are absent from that list. Configure intended environments with appropriate backend credentials. |
 | Migration | Mumbai has 15 Drizzle entries through 0014; explicit-grant SQL workflow checks pass. A separately isolated staging backend remains needed for browser acceptance. |
@@ -105,7 +105,12 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
    otherwise direct PostgREST calls by unenrolled administrators bypass the app
    deadline. Existing verified factors require AAL2 regardless of this rollout.
 5. Run `npm run check:production` with the intended deployment environment. It
-   checks configuration only and does not replace hosted acceptance tests.
+   deliberately does not load `.env.local`, rejects an explicitly non-Production
+   Vercel environment and invalid origins, and never prints credentials.
+   For an explicitly prepared, gitignored environment file, use
+   `node --env-file=.env.production.local scripts/production-preflight.mjs`.
+   Secret variables omitted by provider env pulls must still be supplied securely.
+   This checks configuration only and does not replace hosted acceptance tests.
 6. Exercise two workspaces and each role in staging. Verify invitation send,
    verified-email acceptance, revoked/expired invitations, reset email and new
    password, MFA, sign-out, property/unit/pricing persistence, guest and owner
