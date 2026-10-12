@@ -6,9 +6,30 @@ workspace settings, audited CSV exports and previewed guest CSV imports.
 This is not the full product: payouts, channel sync, messaging, AI, automatic
 turnover generation and property/booking/owner imports remain unfinished.
 
-Status on 2026-10-11: **release candidate; NOT approved for production**.
-Code changes are on `production-hardening`. No live migration or deployment has
-been performed as part of this hardening pass.
+Status on 2026-10-13: **release candidate; NOT approved for production**.
+Code changes are on `production-hardening`. Mumbai migrations 0000–0014 are
+applied (15 journal entries). Preview is deployed separately from the older main
+production release. WhatsApp/calendar configuration is draft-only, not automation.
+
+## Latest verification — 2026-10-13
+
+- Fixed missing authenticated column grants that prevented core writes on Mumbai.
+  Existing RLS remains enabled; direct booking updates still require audited RPCs.
+- 123 unit/API tests, 72 database tests under EACH of explicit-only and legacy
+  default grants, and 13 local production-build Chromium smoke tests pass.
+  Typecheck, lint and migration checks pass; one existing compiler warning remains.
+- 11 hosted SQL checks pass on Mumbai: owner, property/unit/amenity, guest,
+  booking edit/cancel, cleaning task, expense void, report, idempotent guest import,
+  settings/draft, cross-workspace read denial, and rollback verification.
+  Synthetic records are always rolled back. This does NOT test browser sessions,
+  PostgREST exposure, real Auth sign-in, MFA enrollment, or SMTP delivery.
+- Fixed health probe to use a server-only client after bearer authorization;
+  anonymous table access is intentionally denied and must not indicate an outage.
+- Pre-migration custom archive saved locally at
+  `/tmp/staypilot-mumbai-pre-grants-kxa665/mumbai.dump` (368295 bytes), SHA256
+  `23d65ff3623ad24411af816dd5da8d76e86cbfb0c42843f92b49e45bdab835dc`.
+  Archive listing is readable. This temporary local copy is NOT a restore drill,
+  durable off-site backup, or retention policy.
 
 ## Verified locally
 
@@ -16,11 +37,11 @@ been performed as part of this hardening pass.
   with `npm audit --omit=dev`.
 - Unit/API tests cover permissions, API MFA/origin guards, bounded request bodies,
   failed MFA providers, signed recovery markers, validation and redirects.
-- Disposable PGlite PostgreSQL tests install all 13 migrations and exercise real
+- Disposable PGlite PostgreSQL tests install all 15 migrations and exercise real
   RLS/functions: two tenants, all roles, suspended owners, MFA assurance, private
   documents, team profiles, property transactions, unit edits, overlapping dates,
   invitation replay and role escalation, last-admin invariants, shared rate limits.
-- 94 unit/action/API tests and 53 database tests pass. New coverage includes task
+- Unit/action/API and database coverage includes task
   assignment and stale-update rejection, vendor scoping, immutable/void expenses,
   owner-scoped exact-decimal report totals, settings protection, CSV formula
   neutralization, bounded exports, and atomic/idempotent guest import.
@@ -35,11 +56,11 @@ been performed as part of this hardening pass.
 
 | Requirement | Observed state / action |
 | --- | --- |
-| Vercel access | Project `staypilot`, team `bnbpilot-team`: project inspection denied (403); CLI has no authenticated session. Reconnect a principal with access. |
-| Invite-only Auth | Sydney Supabase project `mmewrudedcifohamfetc` returns `disable_signup=false` and `mailer_autoconfirm=true`. Disable public signup and require email confirmation before inviting users. |
-| Admin MFA | 3 privileged memberships; no privileged users with verified factors in the inspected database. Enroll admins before enabling enforcement. |
-| Runtime configuration | Local environment lacks canonical app URL, service-role key, health secret, and MFA deadline. Vercel values could not be inspected. Configure these in the deployment environment; never commit them. |
-| Migration | Live Drizzle history contains 10 entries; this branch adds `0010_production_security`, `0011_operational_workflows`, and `0012_workspace_data_tools`. Validate on staging, then apply through Drizzle before deploying this code. |
+| Vercel access | Project `staypilot`, team `bnbpilot-team`: deployment/env metadata accessible, but runtime logs return 403 and CLI has no authenticated session. Restore scoped access for live investigation. |
+| Invite-only Auth | Mumbai Auth configuration and successful SMTP delivery still need verification. Earlier Sydney findings do not establish Mumbai settings. |
+| Admin MFA | Mumbai has 3 active privileged users and zero with verified factors; database enforcement is false. Enroll administrators before enabling both gates to prevent lockout. |
+| Runtime configuration | Vercel list shows five variables, all Preview-only. Production settings, canonical app URL and MFA deadline are absent from that list. Configure intended environments with appropriate backend credentials. |
+| Migration | Mumbai has 15 Drizzle entries through 0014; explicit-grant SQL workflow checks pass. A separately isolated staging backend remains needed for browser acceptance. |
 | Staging acceptance | Successful real sign-in, MFA, invite email/acceptance, password recovery and property/guest/owner/booking CRUD remain unverified. |
 | Operations | SMTP delivery, backup/restore drill, uptime monitor, alert routing, deployment checks, and rollback need live evidence. |
 
@@ -48,7 +69,7 @@ the GitHub Actions app. Force pushes and branch deletion are disabled. Repositor
 administrators retain an override; Vercel Deployment Checks still need configuring
 because GitHub protection alone does not control Vercel domain assignment.
 
-The production database reports PostgreSQL 17.6.1.166. Review the supported
+The previously inspected Sydney database reported PostgreSQL 17.6.1.166. Review the supported
 17.11 security upgrade with Supabase before release. See the
 [provider upgrade advisory](https://supabase.com/changelog/postgres-15-19-17-11-breaking-changes).
 Do not perform a database upgrade without a backup, maintenance plan and validation.
@@ -106,7 +127,7 @@ Do not perform a database upgrade without a backup, maintenance plan and validat
 
 ## Deployment compatibility and rollback
 
-The new code requires migrations 0010–0012 and `SUPABASE_SERVICE_ROLE_KEY` for rate
+The new code requires migrations through 0014 and `SUPABASE_SERVICE_ROLE_KEY` for rate
 limits. Missing configuration fails closed: login and protected write requests
 will not proceed. The code must not be deployed ahead of its database changes.
 Rate limits use shared PostgreSQL counters, not per-process memory. On Vercel,

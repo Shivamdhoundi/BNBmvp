@@ -18,7 +18,7 @@
     "seed:clear": "node scripts/clear-demo.mjs",
     "test": "vitest run",
     "test:unit": "vitest run",
-    "test:db": "node tests/database/run.mjs",
+    "test:db": "node tests/database/run.mjs && DB_TEST_DEFAULT_GRANTS=legacy node tests/database/run.mjs",
     "test:e2e": "node scripts/test-browser.mjs",
     "check:production": "node scripts/production-preflight.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run test:db && npm run db:check && npm audit --omit=dev && npm run build"

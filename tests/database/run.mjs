@@ -33,8 +33,13 @@ try {
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT (auth.jwt()->>'sub')::uuid $$;
     GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
     GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA auth TO anon, authenticated, service_role;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
   `);
+  // Run both historical and opt-in Supabase privilege models. Never mask missing
+  // grants by always bootstrapping the test database with GRANT ALL defaults.
+  if (process.env.DB_TEST_DEFAULT_GRANTS === 'legacy') {
+    await db.exec('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role');
+  }
+  console.log(`Privilege baseline: ${process.env.DB_TEST_DEFAULT_GRANTS === 'legacy' ? 'legacy broad defaults' : 'explicit grants only'}`);
   const journal = JSON.parse(await readFile(new URL('../../drizzle/meta/_journal.json', import.meta.url)));
   for (const entry of journal.entries) {
     const sql = await readFile(new URL(`../../drizzle/${entry.tag}.sql`, import.meta.url), 'utf8');
@@ -309,6 +314,42 @@ try {
   await test('draft cannot be moved to another workspace',async()=>{
     await asUser(1); await db.query('INSERT INTO public.automation_drafts(organization_id) VALUES($1)',[org(1)]);
     await assert.rejects(db.query('UPDATE public.automation_drafts SET organization_id=$1,version=2',[org(2)]),/permission denied/);
+  });
+  await test('admin can create and edit owners using only app fields',async()=>{
+    await asUser(1);
+    const id=(await db.query("INSERT INTO public.owners(organization_id,legal_name,email,phone,is_active) VALUES($1,'Test owner','owner@example.test','',true) RETURNING id",[org(1)])).rows[0].id;
+    assert.equal((await db.query("UPDATE public.owners SET legal_name='Updated',archived_at=now(),is_active=false WHERE id=$1 RETURNING legal_name",[id])).rows[0].legal_name,'Updated');
+  });
+  await test('operations can create and edit guests using only app fields',async()=>{
+    await asUser(3);
+    const id=(await db.query("INSERT INTO public.guests(organization_id,first_name,last_name,email,phone,identity_verified) VALUES($1,'Test','Guest','guest@example.test','',false) RETURNING id",[org(1)])).rows[0].id;
+    assert.equal((await db.query("UPDATE public.guests SET first_name='Updated',archived_at=now() WHERE id=$1 RETURNING first_name",[id])).rows[0].first_name,'Updated');
+  });
+  await test('admin property edits and amenity add/remove have explicit grants',async()=>{
+    await asUser(1);
+    assert.equal((await db.query("UPDATE public.properties SET name='Updated',base_price=2400 WHERE id=$1 RETURNING name",[property(1)])).rows[0].name,'Updated');
+    const id=(await db.query("INSERT INTO public.property_amenities(organization_id,property_id,amenity_key,details) VALUES($1,$2,'wifi','Test') RETURNING id",[org(1),property(1)])).rows[0].id;
+    assert.equal((await db.query('DELETE FROM public.property_amenities WHERE id=$1 RETURNING id',[id])).rows.length,1);
+  });
+  await test('operations cannot create owners despite INSERT column grants',async()=>{
+    await asUser(3);
+    await assert.rejects(db.query("INSERT INTO public.owners(organization_id,legal_name,email) VALUES($1,'Denied','test@example.test')",[org(1)]),/row-level security/);
+  });
+  await test('guest workspace cannot be reassigned even by administrators',async()=>{
+    await asUser(1);
+    await assert.rejects(db.query('UPDATE public.guests SET organization_id=$1 WHERE id=$2',[org(2),guest(1)]),/permission denied/);
+  });
+  await test('bookings require audited RPCs for changes',async()=>{
+    await asUser(1);
+    await assert.rejects(db.query("UPDATE public.bookings SET status='cancelled' WHERE property_id=$1",[property(1)]),/permission denied/);
+  });
+  await test('server health probe has explicit minimal read access',async()=>{
+    await db.exec('SET LOCAL ROLE service_role');
+    assert.equal((await db.query('SELECT id FROM public.organizations LIMIT 1')).rows.length,1);
+  });
+  await test('anonymous callers cannot read core operational data',async()=>{
+    await db.exec('SET LOCAL ROLE anon');
+    await assert.rejects(db.query('SELECT * FROM public.guests'),/permission denied/);
   });
   await test('all public tables have RLS enabled',async()=>{
     assert.equal((await db.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public' AND NOT rowsecurity")).rows[0].n,0);

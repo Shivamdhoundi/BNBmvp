@@ -99,6 +99,13 @@
       "when": 1791750095724,
       "tag": "0013_automation_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791841576512,
+      "tag": "0014_explicit_core_workflow_grants",
+      "breakpoints": true
     }
   ]
 }
