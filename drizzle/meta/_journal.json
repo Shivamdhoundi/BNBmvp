@@ -92,6 +92,13 @@
       "when": 1791689809865,
       "tag": "0012_workspace_data_tools",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791750095724,
+      "tag": "0013_automation_setup",
+      "breakpoints": true
     }
   ]
 }

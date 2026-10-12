@@ -269,6 +269,47 @@ try {
   await test('operations cannot bulk import guests',async()=>{
     await asUser(3); await assert.rejects(db.query('SELECT public.import_guests($1,$2)',[org(1),JSON.stringify(importRows)]),/Not authorized/);
   });
+  await test('automation draft saves atomically with audit and version checks',async()=>{
+    await asUser(1);
+    await db.query('INSERT INTO public.automation_drafts(organization_id,airbnb_requested) VALUES($1,true)',[org(1)]);
+    assert.equal((await db.query('SELECT version FROM public.automation_drafts')).rows[0].version,1);
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM public.audit_logs WHERE action='automation.draft_saved'")).rows[0].n,1);
+    await db.query('UPDATE public.automation_drafts SET reminder_hours=12,version=2 WHERE organization_id=$1 AND version=1',[org(1)]);
+    assert.equal((await db.query('UPDATE public.automation_drafts SET reminder_hours=6,version=2 WHERE organization_id=$1 AND version=1 RETURNING version',[org(1)])).rows.length,0);
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM public.audit_logs WHERE action='automation.draft_saved'")).rows[0].n,2);
+    await assert.rejects(db.query('UPDATE public.automation_drafts SET reminder_hours=6 WHERE organization_id=$1',[org(1)]),/Invalid draft version/);
+  });
+  for (const n of [3,4,5,6,7,8]) {
+    await test(`automation draft is inaccessible to non-admin or cross-tenant user ${n}`,async()=>{
+      await asUser(1);
+      await db.query('INSERT INTO public.automation_drafts(organization_id) VALUES($1)',[org(1)]);
+      await asUser(n); assert.equal(await count('automation_drafts'),0);
+      assert.equal((await db.query('UPDATE public.automation_drafts SET airbnb_requested=true,version=2 WHERE organization_id=$1 RETURNING version',[org(1)])).rows.length,0);
+      await assert.rejects(db.query('INSERT INTO public.automation_drafts(organization_id) VALUES($1)',[org(1)]),/Not authorized|row-level security/);
+    });
+  }
+  await test('anonymous role cannot read automation drafts',async()=>{
+    await db.exec('SET LOCAL ROLE anon');
+    await assert.rejects(db.query('SELECT * FROM public.automation_drafts'),/permission denied/);
+  });
+  await test('automation setup respects database MFA enforcement',async()=>{
+    await asUser(1); await db.query('INSERT INTO public.automation_drafts(organization_id) VALUES($1)',[org(1)]);
+    await db.exec('RESET ROLE');
+    await db.query("INSERT INTO auth.mfa_factors(user_id,status) VALUES($1,'verified')",[user(1)]);
+    await asUser(1); assert.equal(await count('automation_drafts'),0);
+    await asUser(1,'aal2'); assert.equal(await count('automation_drafts'),1);
+  });
+  await test('invalid automation setup rolls back its audit',async()=>{
+    await asUser(1); await db.exec('SAVEPOINT invalid_draft');
+    await assert.rejects(db.query('INSERT INTO public.automation_drafts(organization_id,reminder_hours) VALUES($1,0)',[org(1)]),/check constraint/);
+    await db.exec('ROLLBACK TO SAVEPOINT invalid_draft');
+    assert.equal(await count('automation_drafts'),0);
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM public.audit_logs WHERE action='automation.draft_saved'")).rows[0].n,0);
+  });
+  await test('draft cannot be moved to another workspace',async()=>{
+    await asUser(1); await db.query('INSERT INTO public.automation_drafts(organization_id) VALUES($1)',[org(1)]);
+    await assert.rejects(db.query('UPDATE public.automation_drafts SET organization_id=$1,version=2',[org(2)]),/permission denied/);
+  });
   await test('all public tables have RLS enabled',async()=>{
     assert.equal((await db.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public' AND NOT rowsecurity")).rows[0].n,0);
   });

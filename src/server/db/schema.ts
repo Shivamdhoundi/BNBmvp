@@ -370,3 +370,23 @@ export const expenses = pgTable("expenses", {
   check("expenses_status_valid", sql`status in ('recorded', 'void')`),
   check("expenses_void_valid", sql`(status = 'recorded' and void_reason is null) or (status = 'void' and void_reason is not null and length(trim(void_reason)) between 1 and 300)`),
 ]);
+
+// Draft preferences only. No credentials, live connection state or send/sync switch.
+export const automationDrafts = pgTable("automation_drafts", {
+  organizationId: uuid("organization_id").primaryKey().references(() => organizations.id),
+  whatsappRequested: boolean("whatsapp_requested").default(false).notNull(),
+  airbnbRequested: boolean("airbnb_requested").default(false).notNull(),
+  bookingComRequested: boolean("booking_com_requested").default(false).notNull(),
+  confirmationRequested: boolean("confirmation_requested").default(false).notNull(),
+  reminderRequested: boolean("reminder_requested").default(false).notNull(),
+  reminderHours: integer("reminder_hours").default(24).notNull(),
+  confirmationText: text("confirmation_text").default("").notNull(),
+  reminderText: text("reminder_text").default("").notNull(),
+  version: integer("version").default(1).notNull(),
+  updatedAt,
+}, () => [
+  check("automation_drafts_reminder_hours_valid", sql`reminder_hours between 1 and 168`),
+  check("automation_drafts_text_valid", sql`length(confirmation_text) <= 1000 and length(reminder_text) <= 1000`),
+  check("automation_drafts_version_valid", sql`version > 0`),
+  check("automation_drafts_messages_valid", sql`(not confirmation_requested or (whatsapp_requested and length(trim(confirmation_text)) > 0)) and (not reminder_requested or (whatsapp_requested and length(trim(reminder_text)) > 0))`),
+]);
