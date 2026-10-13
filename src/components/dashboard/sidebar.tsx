@@ -80,9 +80,7 @@ export function Sidebar({ onNavigate, onClose, canManageTeam = false }: {
   return (
     <aside className="flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-slate-950 px-4 py-5 text-slate-200 [padding-bottom:max(1.25rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-2 border-b border-white/10 px-2 pb-5">
-        <div onClick={onNavigate}>
-          <BrandMark href="/dashboard" tone="light" />
-        </div>
+        <BrandMark href="/dashboard" tone="light" onClick={onNavigate} />
         <button type="button" onClick={onClose} aria-label="Close navigation" className="grid h-11 w-11 place-items-center rounded-xl text-slate-300 transition hover:bg-white/10 hover:text-white lg:hidden">
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
