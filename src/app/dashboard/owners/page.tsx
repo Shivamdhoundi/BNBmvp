@@ -39,7 +39,7 @@ export default async function OwnersPage() {
         {dbOwners.map((owner) => (
           <div
             key={owner.id}
-            className="group relative flex flex-col overflow-hidden bg-white rounded-3xl border border-slate-200 p-6 transition-all duration-300 hover:border-rose-300 hover:shadow-lg"
+            className="brand-card group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 hover:border-rose-300"
           >
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
