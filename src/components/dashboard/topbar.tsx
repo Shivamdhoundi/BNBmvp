@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { BrandSymbol } from "@/components/brand-mark";
 import { ChevronDown, Menu, User } from "lucide-react";
 import type { OrganizationContext } from "@/server/auth/context";
 import { SignOutButton } from "@/components/dashboard/sign-out-button";
@@ -51,6 +52,9 @@ export function Topbar({ context, isSidebarOpen = false, onMenuClick }: {
         >
           <Menu aria-hidden="true" className="h-5 w-5" />
         </button>
+        <span aria-hidden="true" className="brand-logo-surface mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.7rem] text-white sm:hidden">
+          <BrandSymbol className="h-6 w-6" />
+        </span>
         <div className="min-w-0">
           <p className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:block">Current workspace</p>
           <p className="truncate text-sm font-bold text-slate-900 sm:text-base">{context?.organization?.name || "StayPilot"}</p>
