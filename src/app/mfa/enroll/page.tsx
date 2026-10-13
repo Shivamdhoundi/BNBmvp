@@ -5,7 +5,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { MfaEnrollForm } from "@/components/auth/mfa-enroll-form";
 import { getSignedInUser } from "@/server/auth/context";
 
-export const metadata = { title: "Set up MFA | StayPilot" };
+export const metadata = { title: "Set up MFA | Aero Stays" };
 
 export default async function MfaEnrollPage() {
   const user = await getSignedInUser();
