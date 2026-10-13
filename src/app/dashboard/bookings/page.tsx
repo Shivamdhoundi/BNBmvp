@@ -51,7 +51,7 @@ export default async function BookingsPage() {
         {dbBookings.map((booking: BookingItem) => (
           <div
             key={booking.id}
-            className="group relative flex flex-col overflow-hidden bg-white rounded-3xl border border-slate-200 p-6 transition-all duration-300 hover:border-rose-300 hover:shadow-lg"
+            className="brand-card group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 hover:border-rose-300"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

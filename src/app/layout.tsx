@@ -1,26 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { connection } from "next/server";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
+const geistSans = Plus_Jakarta_Sans({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = JetBrains_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "StayPilot | Property Operations",
-    template: "%s | StayPilot",
+    default: "Aero Stays | Property Operations",
+    template: "%s | Aero Stays",
   },
-  description: "Short-term rental operations platform for exceptional stays.",
+  description: "Thoughtful property operations, bookings and stays — managed in one place.",
+  applicationName: "Aero Stays",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+    shortcut: "/icon.svg",
+  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Per-request CSP nonces must never be embedded into a cached static page.
+  await connection();
   return (
     <html
       lang="en-IN"

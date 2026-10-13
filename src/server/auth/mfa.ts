@@ -1,9 +1,9 @@
 import "server-only";
+import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import {
   evaluateMfaGate,
-  roleRequiresMfa,
   type AssuranceLevel,
   type MfaGateDecision,
 } from "@/lib/auth/mfa";
@@ -19,15 +19,18 @@ export type MfaSnapshot = {
  * Reads the current authenticator assurance level and verified-factor state
  * for the signed-in user from Supabase.
  */
-export async function getMfaSnapshot(): Promise<MfaSnapshot> {
+export const getMfaSnapshot = cache(async (): Promise<MfaSnapshot> => {
   const supabase = await createClient();
 
   // These two reads are independent, so run them concurrently to avoid a
   // second sequential round-trip to Supabase.
-  const [{ data: aal }, { data: factors }] = await Promise.all([
+  const [{ data: aal, error: aalError }, { data: factors, error: factorsError }] = await Promise.all([
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
     supabase.auth.mfa.listFactors(),
   ]);
+  if (aalError || factorsError || !aal || !factors || (aal.currentLevel !== "aal1" && aal.currentLevel !== "aal2")) {
+    throw new Error("Unable to verify authentication assurance.");
+  }
 
   const verifiedTotp = (factors?.totp ?? []).some((factor) => factor.status === "verified");
 
@@ -36,13 +39,12 @@ export async function getMfaSnapshot(): Promise<MfaSnapshot> {
     currentLevel: (aal?.currentLevel as AssuranceLevel) ?? null,
     nextLevel: (aal?.nextLevel as AssuranceLevel) ?? null,
   };
-}
+});
 
 /**
  * Computes the MFA gate decision for the current organization context.
  */
 export async function getMfaGate(context: OrganizationContext): Promise<MfaGateDecision> {
-  if (!roleRequiresMfa(context.role)) return { kind: "allow" };
   const snapshot = await getMfaSnapshot();
   return evaluateMfaGate({
     role: context.role,

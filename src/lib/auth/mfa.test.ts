@@ -32,6 +32,9 @@ describe("MFA policy", () => {
   it("allows non-privileged roles through the gate", () => {
     expect(evaluateMfaGate({ role: "operations", hasVerifiedFactor: false, currentLevel: "aal1" })).toEqual({ kind: "allow" });
   });
+  it("requires verification for any user who enrolled a factor", () => {
+    expect(evaluateMfaGate({ role: "operations", hasVerifiedFactor: true, currentLevel: "aal1" })).toEqual({ kind: "verify" });
+  });
 
   it("requires verification when a privileged user has a factor but is only AAL1", () => {
     expect(evaluateMfaGate({ role: "admin", hasVerifiedFactor: true, currentLevel: "aal1" })).toEqual({ kind: "verify" });

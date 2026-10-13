@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import {
-  createRecoveryMarker,
   getRecoveryRedirectPath,
   RECOVERY_MARKER_COOKIE,
   RECOVERY_MARKER_MAX_AGE_SECONDS,
 } from "@/lib/auth/password-recovery";
 import { createClient } from "@/lib/supabase/server";
+import { createSignedRecoveryMarker } from "@/server/auth/recovery-marker";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
   if (path === "/auth/reset-password" && recoveryUserId) {
     response.cookies.set(
       RECOVERY_MARKER_COOKIE,
-      createRecoveryMarker(recoveryUserId),
+      createSignedRecoveryMarker(recoveryUserId),
       {
         httpOnly: true,
         secure: request.nextUrl.protocol === "https:",

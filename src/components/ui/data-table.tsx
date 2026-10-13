@@ -86,6 +86,7 @@ export function DataTable<TData, TValue>({
         <div className="flex flex-1 items-center space-x-2">
           {searchKey ? (
             <input
+              aria-label={searchPlaceholder}
               placeholder={searchPlaceholder}
               value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
               onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
@@ -93,6 +94,7 @@ export function DataTable<TData, TValue>({
             />
           ) : (
              <input
+              aria-label={searchPlaceholder}
               placeholder={searchPlaceholder}
               value={globalFilter ?? ""}
               onChange={(event) => setGlobalFilter(event.target.value)}
@@ -126,6 +128,10 @@ export function DataTable<TData, TValue>({
           {/* View Options */}
           <div className="relative">
             <button
+              type="button"
+              aria-label="Choose visible columns"
+              aria-expanded={showColumnsMenu}
+              aria-controls="table-columns-menu"
               onClick={() => setShowColumnsMenu(!showColumnsMenu)}
               className="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 h-10 px-4 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
             >
@@ -133,7 +139,7 @@ export function DataTable<TData, TValue>({
               View
             </button>
             {showColumnsMenu && (
-              <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-lg shadow-black/5">
+              <div id="table-columns-menu" className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-lg shadow-black/5">
                 <div className="px-2 py-1.5 text-sm font-semibold text-slate-900">Toggle columns</div>
                 <div className="h-px bg-slate-100 my-1" />
                 {table
@@ -173,26 +179,25 @@ export function DataTable<TData, TValue>({
                     return (
                       <th
                         key={header.id}
+                        aria-sort={header.column.getIsSorted() === "asc" ? "ascending" : header.column.getIsSorted() === "desc" ? "descending" : undefined}
                         className="h-12 px-4 align-middle font-medium select-none whitespace-nowrap"
                         style={{ width: header.column.getSize() !== 150 ? header.column.getSize() : undefined }}
                       >
                         {header.isPlaceholder ? null : (
-                          <div 
-                            className={cn(
-                              "flex items-center gap-2",
-                              header.column.getCanSort() ? "cursor-pointer select-none hover:text-slate-900 transition-colors" : ""
-                            )}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {{
-                              asc: <ChevronDown className="h-4 w-4 rotate-180" />,
-                              desc: <ChevronDown className="h-4 w-4" />,
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
+                          header.column.getCanSort() ? (
+                            <button
+                              type="button"
+                              onClick={header.column.getToggleSortingHandler()}
+                              className="flex min-h-9 items-center gap-2 rounded-md text-left transition-colors hover:text-slate-900"
+                              aria-label={`Sort by ${typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.column.id}`}
+                            >
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                              {{
+                                asc: <ChevronDown aria-hidden="true" className="h-4 w-4 rotate-180" />,
+                                desc: <ChevronDown aria-hidden="true" className="h-4 w-4" />,
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </button>
+                          ) : flexRender(header.column.columnDef.header, header.getContext())
                         )}
                       </th>
                     );

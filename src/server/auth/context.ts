@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import type { AppRole } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { getMfaGate } from "@/server/auth/mfa";
 
 export type OrganizationContext = {
   user: { id: string; email: string | undefined; fullName: string | undefined };
@@ -76,5 +77,9 @@ export async function requireOrganizationContext(): Promise<OrganizationContext>
     const user = await getSignedInUser();
     redirect(user ? "/select-profile" : "/sign-in");
   }
+  // Layouts do not guard direct Server Action requests.
+  const gate = await getMfaGate(context);
+  if (gate.kind === "verify") redirect("/mfa/verify");
+  if (gate.kind === "enroll") redirect("/mfa/enroll");
   return context;
 }

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  date,
   index,
   integer,
   jsonb,
@@ -320,3 +321,72 @@ export const organizationInvitations = pgTable(
     check("organization_invitations_expiry_valid", sql`expires_at > created_at`),
   ],
 );
+
+export const operationTasks = pgTable("operation_tasks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id),
+  propertyId: uuid("property_id").notNull().references(() => properties.id),
+  kind: text("kind").notNull(),
+  title: text("title").notNull(),
+  notes: text("notes").default("").notNull(),
+  priority: text("priority").default("normal").notNull(),
+  status: text("status").default("open").notNull(),
+  dueDate: date("due_date").notNull(),
+  assignedTo: uuid("assigned_to").references(() => users.id),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  version: integer("version").default(1).notNull(),
+  createdAt, updatedAt,
+}, (t) => [
+  index("operation_tasks_org_kind_due_idx").on(t.organizationId, t.kind, t.dueDate),
+  index("operation_tasks_assignee_idx").on(t.assignedTo, t.organizationId),
+  index("operation_tasks_property_idx").on(t.propertyId),
+  check("operation_tasks_kind_valid", sql`kind in ('cleaning', 'maintenance')`),
+  check("operation_tasks_status_valid", sql`status in ('open', 'in_progress', 'completed', 'cancelled')`),
+  check("operation_tasks_priority_valid", sql`priority in ('low', 'normal', 'urgent')`),
+  check("operation_tasks_text_valid", sql`length(trim(title)) between 1 and 160 and length(notes) <= 4000`),
+  check("operation_tasks_completion_valid", sql`(status = 'completed') = (completed_at is not null)`),
+]);
+
+export const expenses = pgTable("expenses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id),
+  propertyId: uuid("property_id").notNull().references(() => properties.id),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  incurredOn: date("incurred_on").notNull(),
+  status: text("status").default("recorded").notNull(),
+  voidReason: text("void_reason"),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  version: integer("version").default(1).notNull(),
+  createdAt, updatedAt,
+}, (t) => [
+  index("expenses_org_date_idx").on(t.organizationId, t.incurredOn),
+  index("expenses_property_idx").on(t.propertyId),
+  check("expenses_amount_valid", sql`amount > 0 and amount <= 9999999999.99`),
+  check("expenses_text_valid", sql`length(trim(description)) between 1 and 300`),
+  check("expenses_category_valid", sql`category in ('cleaning', 'maintenance', 'utilities', 'supplies', 'other')`),
+  check("expenses_status_valid", sql`status in ('recorded', 'void')`),
+  check("expenses_void_valid", sql`(status = 'recorded' and void_reason is null) or (status = 'void' and void_reason is not null and length(trim(void_reason)) between 1 and 300)`),
+]);
+
+// Draft preferences only. No credentials, live connection state or send/sync switch.
+export const automationDrafts = pgTable("automation_drafts", {
+  organizationId: uuid("organization_id").primaryKey().references(() => organizations.id),
+  whatsappRequested: boolean("whatsapp_requested").default(false).notNull(),
+  airbnbRequested: boolean("airbnb_requested").default(false).notNull(),
+  bookingComRequested: boolean("booking_com_requested").default(false).notNull(),
+  confirmationRequested: boolean("confirmation_requested").default(false).notNull(),
+  reminderRequested: boolean("reminder_requested").default(false).notNull(),
+  reminderHours: integer("reminder_hours").default(24).notNull(),
+  confirmationText: text("confirmation_text").default("").notNull(),
+  reminderText: text("reminder_text").default("").notNull(),
+  version: integer("version").default(1).notNull(),
+  updatedAt,
+}, () => [
+  check("automation_drafts_reminder_hours_valid", sql`reminder_hours between 1 and 168`),
+  check("automation_drafts_text_valid", sql`length(confirmation_text) <= 1000 and length(reminder_text) <= 1000`),
+  check("automation_drafts_version_valid", sql`version > 0`),
+  check("automation_drafts_messages_valid", sql`(not confirmation_requested or (whatsapp_requested and length(trim(confirmation_text)) > 0)) and (not reminder_requested or (whatsapp_requested and length(trim(reminder_text)) > 0))`),
+]);

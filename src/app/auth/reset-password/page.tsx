@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
-import { isValidRecoveryMarker, RECOVERY_MARKER_COOKIE } from "@/lib/auth/password-recovery";
+import { RECOVERY_MARKER_COOKIE } from "@/lib/auth/password-recovery";
+import { isValidSignedRecoveryMarker } from "@/server/auth/recovery-marker";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
@@ -12,7 +13,7 @@ export default async function ResetPasswordPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const marker = (await cookies()).get(RECOVERY_MARKER_COOKIE)?.value;
-  const canReset = Boolean(user && isValidRecoveryMarker(marker, user.id));
+  const canReset = Boolean(user && isValidSignedRecoveryMarker(marker, user.id));
 
   return (
     <AuthShell

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { safeInternalPath } from "@/lib/safe-redirect";
+import { enforceAuthRateLimit, RateLimitError } from "@/server/rate-limit";
 
 export async function signIn(formData: FormData, nextPath?: string) {
   const email = String(formData.get("email") ?? "").trim();
@@ -13,6 +14,11 @@ export async function signIn(formData: FormData, nextPath?: string) {
     return { error: "Enter your email address and password." };
   }
 
+  try {
+    await enforceAuthRateLimit("sign-in", email);
+  } catch (error) {
+    return { error: error instanceof RateLimitError ? error.message : "Sign-in is temporarily unavailable." };
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 

@@ -4,6 +4,8 @@ export type AppRole = (typeof appRoles)[number];
 export type Permission = 
   | "properties:read" | "properties:create" | "properties:update" 
   | "organization:manage"
+  | "tasks:read" | "tasks:manage" | "tasks:progress"
+  | "expenses:read" | "expenses:manage" | "reports:read" | "data:export"
   | "guests:read" | "guests:create" | "guests:update"
   | "owners:read" | "owners:create" | "owners:update"
   | "bookings:read" | "bookings:create" | "bookings:update"
@@ -15,6 +17,13 @@ const permissions: Record<Permission, readonly AppRole[]> = {
   "properties:create": ["super_admin", "admin"],
   "properties:update": ["super_admin", "admin"],
   "organization:manage": ["super_admin", "admin"],
+  "tasks:read": ["super_admin", "admin", "operations", "vendor"],
+  "tasks:manage": ["super_admin", "admin", "operations"],
+  "tasks:progress": ["super_admin", "admin", "operations", "vendor"],
+  "expenses:read": ["super_admin", "admin", "operations", "owner"],
+  "expenses:manage": ["super_admin", "admin", "operations"],
+  "reports:read": ["super_admin", "admin", "operations", "owner"],
+  "data:export": ["super_admin", "admin"],
   "guests:read": ["super_admin", "admin", "operations"],
   "guests:create": ["super_admin", "admin", "operations"],
   "guests:update": ["super_admin", "admin", "operations"],

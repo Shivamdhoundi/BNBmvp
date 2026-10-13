@@ -1,4 +1,6 @@
-# StayPilot Operations
+# Aero Stays Operations
+
+**Product name:** Aero Stays (formerly StayPilot). Existing GitHub, Vercel, Supabase, environment-variable and cookie identifiers are intentionally unchanged during this UI rebrand to avoid disrupting deployments, authentication and migrations.
 
 Internal, multi-tenant short-term rental operations platform for a controlled Gurgaon/Gurugram launch.
 
@@ -17,11 +19,17 @@ Internal, multi-tenant short-term rental operations platform for a controlled Gu
 - Append-only audit records for security and core operational mutations
 - Versioned `GET`/`POST /api/v1/properties` route
 
-Cleaning, maintenance, expenses, reporting, import/export, owner payouts, channel integrations, AI, and messaging remain clearly marked as future work.
+The release-candidate branch adds cleaning and maintenance task scheduling,
+assignment and progress, an immutable expense ledger with voiding, completed-stay
+operating reports, workspace settings, audited CSV exports, and previewed atomic
+guest CSV imports. Migrations 0010–0012 must be applied before deploying this code.
+These workflows have isolated automated coverage; hosted authenticated acceptance
+is still required. Owner payouts, booking-channel integrations, AI, messaging,
+automated turnovers, and property/booking/owner imports remain unfinished.
 
 ## Local setup
 
-Prerequisites: Node.js 20.9+ and a Supabase project.
+Prerequisites: Node.js 22.12+ (22.x; see `.nvmrc`) and a Supabase project.
 
 1. Copy the environment template:
 
@@ -40,7 +48,7 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
 3. In **Project Settings → Database**, copy the URI connection string and set `DATABASE_URL`. It is used only by Drizzle migration and administrative scripts; it is never exposed to the browser.
 
-   For invitations, also configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only secret. Set `NEXT_PUBLIC_APP_URL` to the canonical application origin and generate a high-entropy `HEALTHCHECK_SECRET`. Never expose the service-role or database credentials through a `NEXT_PUBLIC_` variable.
+   For invitations and shared auth/API rate limits, configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only secret. Set `NEXT_PUBLIC_APP_URL` to the canonical application origin and generate a high-entropy `HEALTHCHECK_SECRET` (also used to sign password-recovery markers). Never expose the service-role or database credentials through a `NEXT_PUBLIC_` variable. Missing rate-limit configuration fails closed, including at sign-in.
 
 4. Apply the schema and security migration:
 
@@ -69,6 +77,9 @@ Prerequisites: Node.js 20.9+ and a Supabase project.
 
 ## Useful commands
 
+Production release prerequisites, verified coverage, rollout order and remaining
+live blockers are tracked in [the release record](docs/production-readiness.md).
+
 ```bash
 npm run dev          # local server
 npm run lint         # ESLint
@@ -76,13 +87,16 @@ npm run build        # production build
 npm run db:generate  # create a future Drizzle migration after a schema change
 npm run db:check     # validate migration history
 npm run db:migrate   # apply migrations from drizzle/
+npm run check        # lint, types, unit/API + isolated DB tests, audit, build
+npm run test:e2e     # rebuild with dummy backend, then Chromium security smoke tests
+npm run check:production # validate production configuration (no writes)
 ```
 
 The demo seed and clear commands are intentionally guarded. Before running either, set `DEMO_ORGANIZATION_ID` to the exact target workspace UUID and set `DEMO_DATA_CONFIRM=ALLOW_DEMO_DATA_MUTATION` for that single shell/session. Never add those confirmation values to production deployment variables.
 
 ## Security model
 
-StayPilot is configured as an internal, invite-only application:
+Aero Stays is configured as an internal, invite-only application:
 
 - The sign-in form authenticates existing Supabase users only; failed sign-ins never create accounts.
 - `/sign-up` and self-service workspace creation are disabled.

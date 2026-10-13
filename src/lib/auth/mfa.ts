@@ -63,8 +63,6 @@ export function evaluateMfaGate(input: {
 }): MfaGateDecision {
   const { role, hasVerifiedFactor, currentLevel } = input;
 
-  if (!roleRequiresMfa(role)) return { kind: "allow" };
-
   if (hasVerifiedFactor) {
     return currentLevel === "aal2" ? { kind: "allow" } : { kind: "verify" };
   }

@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -31,7 +30,7 @@
 body {
   background: var(--bg-page);
   color: var(--foreground);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -105,3 +104,49 @@ body {
   background: #94a3b8;
 }
 
+/* Keyboard users must be able to see the focused control throughout the app. */
+:where(a, button, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--brand-dark);
+  outline-offset: 3px;
+}
+::selection {
+  background: var(--brand-soft);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* StayPilot identity — repeatable across navigation, sign-in and workspace. */
+.brand-logo-surface {
+  background: linear-gradient(145deg, #f24b66 0%, #e11d48 58%, #be123c 100%);
+}
+.brand-ambient {
+  background-image:
+    radial-gradient(ellipse at 18% 3%, rgba(244, 63, 94, 0.10), transparent 45%),
+    radial-gradient(ellipse at 91% 25%, rgba(99, 102, 241, 0.06), transparent 42%);
+}
+.brand-card {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+.brand-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 17px 34px -24px rgba(15, 23, 42, 0.4);
+}
+.brand-enter {
+  animation: brand-enter 550ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes brand-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-card:hover { transform: none; }
+  .brand-enter { animation: none; }
+}
