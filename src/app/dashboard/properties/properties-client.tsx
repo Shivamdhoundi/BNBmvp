@@ -26,7 +26,9 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
           {/* View Toggle */}
           <div className="col-span-2 flex min-h-11 items-center rounded-xl border border-slate-200 bg-white p-1 sm:col-span-1">
             <button
+              type="button"
               onClick={() => setViewMode("table")}
+              aria-pressed={viewMode === "table"}
               aria-label="Show properties as a table"
               className={`flex min-h-9 flex-1 items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                 viewMode === "table"
@@ -38,7 +40,9 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
               Table
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
               aria-label="Show properties as cards"
               className={`flex min-h-9 flex-1 items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                 viewMode === "grid"
