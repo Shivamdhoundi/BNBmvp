@@ -40,7 +40,7 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
 
       <div>
         <div className="flex items-center justify-between gap-3">
-          <label htmlFor="staypilot-password" className="text-sm font-semibold text-slate-900">Password</label>
+          <label htmlFor="aero-stays-password" className="text-sm font-semibold text-slate-900">Password</label>
           <Link href="/forgot-password" className="text-sm font-semibold text-rose-700 transition hover:text-rose-800 hover:underline">
             Forgot password?
           </Link>
@@ -48,7 +48,7 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
         <div className="relative mt-2">
           <LockKeyhole aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
           <input
-            id="staypilot-password"
+            id="aero-stays-password"
             name="password"
             type={showPassword ? "text" : "password"}
             required
