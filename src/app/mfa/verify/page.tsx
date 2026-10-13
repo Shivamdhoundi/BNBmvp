@@ -5,7 +5,7 @@ import { MfaVerifyForm } from "@/components/auth/mfa-verify-form";
 import { getSignedInUser } from "@/server/auth/context";
 import { getMfaSnapshot } from "@/server/auth/mfa";
 
-export const metadata = { title: "Verify MFA | StayPilot" };
+export const metadata = { title: "Verify MFA | Aero Stays" };
 
 export default async function MfaVerifyPage() {
   const user = await getSignedInUser();
