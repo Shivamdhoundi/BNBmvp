@@ -16,9 +16,9 @@ test("sign-in hydrates under nonce CSP without browser errors", async ({ page })
   expect(errors).toEqual([]);
 });
 
-test("StayPilot branding and password visibility work on the sign-in screen", async ({ page }) => {
+test("Aero Stays branding and password visibility work on the sign-in screen", async ({ page }) => {
   await page.goto("/sign-in");
-  const logo = page.getByRole("link", { name: "StayPilot home" });
+  const logo = page.getByRole("link", { name: "Aero Stays home" });
   await expect(logo).toBeVisible();
   await expect(logo.locator("svg")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();

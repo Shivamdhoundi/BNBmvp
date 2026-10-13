@@ -65,7 +65,7 @@ export function AuthShell({
         <Image src="/properties/villa.png" alt="" fill sizes="50vw" className="object-cover opacity-85" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-12 xl:p-16">
-          <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white">StayPilot</span>
+          <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white">Aero Stays</span>
           <h2 className="mt-7 text-4xl font-extrabold leading-tight tracking-tight text-white xl:text-5xl">
             Every property.<br />Every stay.<br /><span className="text-rose-300">One clear view.</span>
           </h2>

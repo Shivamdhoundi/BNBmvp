@@ -57,7 +57,7 @@ export function Topbar({ context, isSidebarOpen = false, onMenuClick }: {
         </span>
         <div className="min-w-0">
           <p className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:block">Current workspace</p>
-          <p className="truncate text-sm font-bold text-slate-900 sm:text-base">{context?.organization?.name || "StayPilot"}</p>
+          <p className="truncate text-sm font-bold text-slate-900 sm:text-base">{context?.organization?.name || "Aero Stays"}</p>
         </div>
       </div>
 

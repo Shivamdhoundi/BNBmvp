@@ -38,7 +38,7 @@ export default async function AutomationsPage() {
         <h2 className="text-lg font-semibold">Airbnb / Booking.com · Feeds needed</h2>
         <ol className="list-decimal space-y-2 pl-5 text-sm text-slate-700">
           <li>Get a private calendar export link for each eligible listing in your channel account.</li>
-          <li>Map each feed to the correct StayPilot property once the connector is available. Keep feed links private.</li>
+          <li>Map each feed to the correct Aero Stays property once the connector is available. Keep feed links private.</li>
           <li>Implement and test imports, changed dates, cancellations, conflicts and scheduled refreshes before activation.</li>
         </ol>
         <p className="text-sm text-slate-600">Calendar feeds are for availability—not guaranteed full guest details, prices or real-time booking synchronization. We will not treat every blocked date as a guest reservation.</p>

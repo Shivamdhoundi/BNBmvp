@@ -5,7 +5,7 @@ import { listTeamMembers } from "@/server/team/service";
 import { TeamClient } from "@/components/team/team-client";
 
 export const metadata = {
-  title: "Team & Security | StayPilot",
+  title: "Team & Security | Aero Stays",
 };
 
 export default async function TeamPage() {
