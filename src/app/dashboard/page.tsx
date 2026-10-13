@@ -43,7 +43,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 pb-12 sm:space-y-10">
-      <header className="relative isolate overflow-hidden rounded-[1.75rem] bg-slate-950 px-6 py-8 text-white shadow-xl shadow-slate-900/10 sm:px-9 sm:py-10 lg:px-12">
+      <header className="brand-enter relative isolate overflow-hidden rounded-[1.75rem] bg-slate-950 px-6 py-8 text-white shadow-xl shadow-slate-900/10 sm:px-9 sm:py-10 lg:px-12">
         <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full bg-rose-500/15 blur-3xl sm:h-96 sm:w-96" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 right-1/3 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {metrics.map(({ label, value, icon: Icon, href, detail }) => (
-            <Link key={label} href={href} className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-rose-200 hover:shadow-md">
+            <Link key={label} href={href} className="brand-card group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-rose-200">
               <div className="flex items-start justify-between gap-3">
                 <span className="rounded-xl bg-rose-50 p-2.5 text-rose-700"><Icon aria-hidden="true" className="h-5 w-5" /></span>
                 <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-slate-300 transition group-hover:text-rose-600" />
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           <h2 id="stays-heading" className="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Stay snapshot</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Link href="/dashboard/bookings" className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-rose-200 hover:shadow-md sm:p-6">
+          <Link href="/dashboard/bookings" className="brand-card group flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-rose-200 sm:p-6">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-600"><Home aria-hidden="true" className="h-4 w-4 text-teal-700" /> Currently in-house</div>
               <p className="mt-3 text-3xl font-extrabold tabular-nums text-slate-950">{inHouse}</p>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
             </div>
             <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-slate-400 group-hover:text-rose-600" />
           </Link>
-          <Link href="/dashboard/calendar" className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-rose-200 hover:shadow-md sm:p-6">
+          <Link href="/dashboard/calendar" className="brand-card group flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-rose-200 sm:p-6">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-600"><Clock3 aria-hidden="true" className="h-4 w-4 text-blue-700" /> Upcoming arrivals</div>
               <p className="mt-3 text-3xl font-extrabold tabular-nums text-slate-950">{upcoming}</p>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
               <Link
                 key={property.id}
                 href={`/dashboard/properties/${property.id}`}
-                className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-rose-200 hover:shadow-md"
+                className="brand-card group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-rose-200"
               >
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700"><Building2 aria-hidden="true" className="h-5 w-5" /></span>
