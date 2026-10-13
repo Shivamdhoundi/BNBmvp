@@ -84,11 +84,14 @@ export function PropertiesClient({ properties, canCreate }: { properties: Proper
               <Link
                 href={`/dashboard/properties/${property.id}`}
                 key={property.id}
-                className="group relative flex flex-col overflow-hidden bg-white rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300"
+                className="brand-card group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-rose-200"
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-                  <div className="absolute inset-0 bg-slate-100 flex items-center justify-center">
-                    <Building2 className="h-10 w-10 text-slate-300" />
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-200">
+                  <div aria-hidden="true" className="absolute -bottom-24 -right-12 h-64 w-64 rounded-full bg-rose-200/40 blur-3xl transition-transform duration-500 group-hover:scale-125 motion-reduce:transform-none" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] border border-white/90 bg-white/70 text-rose-600 shadow-sm backdrop-blur">
+                      <Building2 aria-hidden="true" className="h-8 w-8" />
+                    </span>
                   </div>
                   
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
