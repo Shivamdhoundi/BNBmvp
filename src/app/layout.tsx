@@ -15,11 +15,11 @@ const geistMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "StayPilot | Property Operations",
-    template: "%s | StayPilot",
+    default: "Aero Stays | Property Operations",
+    template: "%s | Aero Stays",
   },
   description: "Thoughtful property operations, bookings and stays — managed in one place.",
-  applicationName: "StayPilot",
+  applicationName: "Aero Stays",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
     shortcut: "/icon.svg",
