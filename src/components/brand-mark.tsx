@@ -22,15 +22,18 @@ export function BrandMark({
   tone = "dark",
   showTagline = true,
   className = "",
+  onClick,
 }: {
   href?: string;
   tone?: "dark" | "light";
   showTagline?: boolean;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       aria-label="StayPilot home"
       className={`group inline-flex min-h-11 items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ${tone === "light" ? "focus-visible:outline-white" : "focus-visible:outline-rose-600"} ${className}`}
     >
