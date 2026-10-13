@@ -7,7 +7,7 @@ import Link from "next/link";
 import { can } from "@/lib/permissions";
 
 export const metadata = {
-  title: "Calendar | StayPilot",
+  title: "Calendar | Aero Stays",
 };
 
 export default async function CalendarPage() {
