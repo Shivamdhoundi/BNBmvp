@@ -1,4 +1,4 @@
-# StayPilot Operations
+# Aero Stays Operations
 
 Internal, multi-tenant short-term rental operations platform for a controlled Gurgaon/Gurugram launch.
 
@@ -94,7 +94,7 @@ The demo seed and clear commands are intentionally guarded. Before running eithe
 
 ## Security model
 
-StayPilot is configured as an internal, invite-only application:
+Aero Stays is configured as an internal, invite-only application:
 
 - The sign-in form authenticates existing Supabase users only; failed sign-ins never create accounts.
 - `/sign-up` and self-service workspace creation are disabled.
