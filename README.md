@@ -1,5 +1,7 @@
 # Aero Stays Operations
 
+**Product name:** Aero Stays (formerly StayPilot). Existing GitHub, Vercel, Supabase, environment-variable and cookie identifiers are intentionally unchanged during this UI rebrand to avoid disrupting deployments, authentication and migrations.
+
 Internal, multi-tenant short-term rental operations platform for a controlled Gurgaon/Gurugram launch.
 
 ## Included in the internal MVP
