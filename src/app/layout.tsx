@@ -18,7 +18,12 @@ export const metadata: Metadata = {
     default: "StayPilot | Property Operations",
     template: "%s | StayPilot",
   },
-  description: "Short-term rental operations platform for exceptional stays.",
+  description: "Thoughtful property operations, bookings and stays — managed in one place.",
+  applicationName: "StayPilot",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+    shortcut: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

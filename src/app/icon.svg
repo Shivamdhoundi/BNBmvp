@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs><linearGradient id="staypilot-fill" x1="8" y1="7" x2="56" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#F24B66"/><stop offset="1" stop-color="#BE123C"/></linearGradient></defs>
+  <rect width="64" height="64" rx="18" fill="url(#staypilot-fill)"/>
+  <path d="M13.5 31.5 32 16l18.5 15.5" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20.5 31.5v16.2h23V31.5" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m28 40.5 9-9m-5.6 0H37v5.6" stroke="#fff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -7,8 +7,8 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
   return (
     <AuthShell 
       mode="centered"
-      title="StayPilot Operations" 
-      description="Sign in to your account to continue."
+      title="Welcome back" 
+      description="Sign in to manage your properties, stays and team."
     >
       {reset === "success" ? (
         <p role="status" className="mb-5 rounded-xl bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-800">

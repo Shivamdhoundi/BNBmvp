@@ -16,6 +16,19 @@ test("sign-in hydrates under nonce CSP without browser errors", async ({ page })
   expect(errors).toEqual([]);
 });
 
+test("StayPilot branding and password visibility work on the sign-in screen", async ({ page }) => {
+  await page.goto("/sign-in");
+  const logo = page.getByRole("link", { name: "StayPilot home" });
+  await expect(logo).toBeVisible();
+  await expect(logo.locator("svg")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "password");
+  await page.getByRole("button", { name: "Show password" }).click();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "Hide password" }).click();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "password");
+});
+
 test("dashboard requires sign-in and preserves internal destination", async ({ page }) => {
   await page.goto("/dashboard/bookings");
   await expect(page).toHaveURL(/\/sign-in\?next=%2Fdashboard%2Fbookings/);
